@@ -1,0 +1,85 @@
+Program = Function 
+          | Function Program
+
+Function = func FuncName () { Block }
+           | func FuncName (Parameters) { Block }
+
+Parameters = VarName
+             | VarName, Parameters
+
+Block = Empty
+        | Statement Block
+        | ConditionalBlock Block
+        | LoopBlock Block
+
+ConditionalBlock = if ( BoolExp ) { Block }
+                   | if ( BoolExp ) { Block } else { Block }
+
+LoopBlock = while ( BoolExp ) { Block }
+
+Statement = VarName = BoolExp;
+            | VarName = ArithmeticExp;
+            | VarName = StringExp;
+            | VarName = FuncCall;
+            | return Argument;
+            | PrintFunc
+
+PrintFunc = print ( StringExp );
+            | print ( ArithmeticExp );
+            |  print ( BoolExp );
+
+FuncCall = FuncName ();
+          | FuncName ( Arguments );
+
+Arguments = Argument
+            | Argument, Arguments
+
+Argument = VarName
+           | FuncCall
+           | BoolExp
+           | StringExp
+           | ArithmeticExp
+
+BoolExp = True
+          | False
+          | VarName
+          | FuncCall
+          | BoolExp && BoolExp
+          | BoolExp || BoolExp
+          | ! BoolExp
+          | ArithmeticExp == ArithmeticExp
+          | ArithmeticExp != ArithmeticExp
+          | ArithmeticExp < ArithmeticExp
+          | ArithmeticExp <= ArithmeticExp
+          | ArithmeticExp > ArithmeticExp
+          | ArithmeticExp >= ArithmeticExp
+          | StringExp == StringExp
+          | StringExp != StringExp
+          | StringExp < StringExp
+          | StringExp <= StringExp
+          | StringExp > StringExp
+          | StringExp >= StringExp
+
+ArithmeticExp = Number
+               | VarName
+               | FuncCall
+               | ArithmeticExp + ArithmeticExp
+               | ArithmeticExp - ArithmeticExp
+               | - ArithmeticExp
+               | ArithmeticExp * ArithmeticExp
+               | ArithmeticExp / ArithmeticExp
+               | ArithmeticExp % ArithmeticExp
+
+StringExp = String
+            | VarName
+            | FuncCall
+            | StringExp ++ StringExp
+
+String = "[0-9a-zA-Z]*"
+
+Number = 0 | [1-9][0-9]*
+
+VarName = [a-zA-Z0-9-]
+
+FuncName = [a-zA-Z]
+            
