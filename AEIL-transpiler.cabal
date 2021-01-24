@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a0ba6c9d0afa21570a104d93f9f735bf84d6dbde375c2875074834635528681a
+-- hash: bcfa955af50f81a5f21c02eb728f8a252748aa80749adbdfb3a26088621b0e22
 
 name:           AEIL-transpiler
 version:        0.1.0.0
@@ -14,7 +14,6 @@ bug-reports:    https://github.com/AgustinIzaguirre/AEIL-haskell-transpiller/iss
 author:         Agustin Izaguirre
 maintainer:     agustinizag1@gmail.com
 copyright:      2021 Agustin Izaguirre
-
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -28,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      Lexer
       Lib
   other-modules:
       Paths_AEIL_transpiler
@@ -35,6 +35,8 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , mtl
+    , parsec
   default-language: Haskell2010
 
 executable AEIL-transpiler-exe
@@ -47,6 +49,8 @@ executable AEIL-transpiler-exe
   build-depends:
       AEIL-transpiler
     , base >=4.7 && <5
+    , mtl
+    , parsec
   default-language: Haskell2010
 
 test-suite AEIL-transpiler-test
@@ -60,4 +64,6 @@ test-suite AEIL-transpiler-test
   build-depends:
       AEIL-transpiler
     , base >=4.7 && <5
+    , mtl
+    , parsec
   default-language: Haskell2010
