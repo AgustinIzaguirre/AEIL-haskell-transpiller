@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bcfa955af50f81a5f21c02eb728f8a252748aa80749adbdfb3a26088621b0e22
+-- hash: 8dbc0eac4a96e9139d82a898ccfc212f096c8a010a0c235e3f29d39f23fc708d
 
 name:           AEIL-transpiler
 version:        0.1.0.0
@@ -27,14 +27,17 @@ source-repository head
 
 library
   exposed-modules:
+      AST
       Lexer
       Lib
+      Parser
   other-modules:
       Paths_AEIL_transpiler
   hs-source-dirs:
       src
   build-depends:
       base >=4.7 && <5
+    , haskeline
     , mtl
     , parsec
   default-language: Haskell2010
@@ -49,6 +52,7 @@ executable AEIL-transpiler-exe
   build-depends:
       AEIL-transpiler
     , base >=4.7 && <5
+    , haskeline
     , mtl
     , parsec
   default-language: Haskell2010
@@ -64,6 +68,7 @@ test-suite AEIL-transpiler-test
   build-depends:
       AEIL-transpiler
     , base >=4.7 && <5
+    , haskeline
     , mtl
     , parsec
   default-language: Haskell2010

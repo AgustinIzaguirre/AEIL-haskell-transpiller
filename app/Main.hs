@@ -1,15 +1,6 @@
--- module Main where
-
--- import Lib
--- import Lexer
-
--- main :: IO ()
--- -- main = parseH
--- main = testFunc 
-
-
 module Main where
-import System.Environment
+
+import System.Environment ( getArgs )
 
 main :: IO ()
 main = do
