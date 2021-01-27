@@ -3,21 +3,21 @@ module Lexer where
 import Text.Parsec.String (Parser)
 import Text.Parsec.Language (emptyDef)
 import qualified Text.Parsec.Token as Token
+import qualified Control.Monad.Identity as Data.Functor.Identity
+import qualified Text.Parsec as Text.Parsec.Prim
 
 lexer :: Token.TokenParser ()
 lexer = Token.makeTokenParser style
     where
-        operations = ["+","*","-",";"]
-        reservedNames = ["def","extern"]
-        -- operations = ["+", "*", "-", ";", "\\", "%", "**", "&&", "||", "!", "++"]
-        -- reservedNames = ["func", "if", "while"]
+        operations = ["+", "*", "-", ";", "\\", "%", "**", "&&", "||", "!", "++"]
+        reservedNames = ["func", "if", "else", "while"]
         style = emptyDef {
-                Token.commentLine = "#",
-                Token.reservedOpNames = operations,
-                Token.reservedNames = reservedNames,
-                Token.commentStart = "\\*",
-                Token.commentEnd = "*/"
-            }
+            Token.commentLine = "#",
+            Token.reservedOpNames = operations,
+            Token.reservedNames = reservedNames,
+            Token.commentStart = "\\*",
+            Token.commentEnd = "*/"
+        }
 
 integer :: Parser Integer
 integer = Token.integer lexer
@@ -42,3 +42,6 @@ reserved = Token.reserved lexer
 
 reservedOperators :: String -> Parser ()
 reservedOperators = Token.reservedOp lexer
+
+whiteSpace :: Text.Parsec.Prim.ParsecT String () Data.Functor.Identity.Identity ()
+whiteSpace = Token.whiteSpace lexer

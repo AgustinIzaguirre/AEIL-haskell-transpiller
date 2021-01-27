@@ -26,38 +26,39 @@ data ValueExp = BoolExp
 data FuncCall = Call Name [ValueExp]
 
 data BoolExp = True
-        | False
-        | BoolVar Name
-        | BoolFunc FuncCall
-        | AND BoolExp BoolExp
-        | OR BoolExp BoolExp
-        | NOTOP BoolExp
-        -- | ArithmeticExp == ArithmeticExp
-        -- | ArithmeticExp != ArithmeticExp
-        -- | ArithmeticExp < ArithmeticExp
-        -- | ArithmeticExp <= ArithmeticExp
-        -- | ArithmeticExp > ArithmeticExp
-        -- | ArithmeticExp >= ArithmeticExp
-        -- | StringExp == StringExp
-        -- | StringExp != StringExp
-        -- | StringExp < StringExp
-        -- | StringExp <= StringExp
-        -- | StringExp > StringExp
-        -- | StringExp >= StringExp
-        -- TODO
+            | False
+            | BoolVar Name
+            | BoolFunc FuncCall
+            | BoolBinaryOperations BoolBinaryOperators BoolExp BoolExp
+            | Not BoolExp
+            | RelationalBinaryArithmetic RelationalBinaryOperator ArithmeticExp ArithmeticExp
+            | RelationalBinaryString RelationalBinaryOperator StringExp StringExp
+
+data RelationalBinaryOperator = Equals
+                                | NotEquals
+                                | Less
+                                | LessOrEqual
+                                | Greater
+                                | GreaterOrEqual
+data BoolBinaryOperators = And
+                        | Or
 
 data ArithmeticExp = Number Integer
                | NumVar Name
                | NumFunc FuncCall
-               | Add ArithmeticExp ArithmeticExp
-               | Minus ArithmeticExp ArithmeticExp
                | Negate ArithmeticExp
-               | Multiply ArithmeticExp ArithmeticExp
-               | Divide ArithmeticExp ArithmeticExp
-               | Modulo ArithmeticExp ArithmeticExp
+               | ArithmeticBinaryOperation ArithmeticBinaryOperator ArithmeticExp ArithmeticExp
+
+data ArithmeticBinaryOperator = Add
+                                | Minus
+                                | Multiply
+                                | Divide
+                                | Modulo
+
 
 data StringExp = StringValue String
                 | StringVar Name
                 | StringFunc FuncCall
-                -- | StringExp CONCAT StringExp
-                -- TODO            
+                | StringBinaryOperation StringOperators StringExp StringExp
+
+data StringOperators = Concat
