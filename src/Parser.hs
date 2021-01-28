@@ -7,8 +7,8 @@ import qualified Text.Parsec.Expr as Expr
 
 import Lexer
 import AST
-    (Statement(Return, Block), ValueExp(BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
-      ArithmeticExp(ArithmeticBinaryOperation, Negate),
+    (Statement(Assign, Return, Block), ValueExp(NumberValue, BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
+      ArithmeticExp(Number, ArithmeticBinaryOperation, Negate),
       BoolBinaryOperators(Or, And),
       BoolExp(FalseValue, TrueValue, BoolBinaryOperations, Not),
       Program )
@@ -48,6 +48,7 @@ statementList = do
 statement :: Parser Statement 
 statement = ifStatement
             <|> returnStatement
+            <|> assignStatement
 
 ifStatement :: Parser Statement
 ifStatement = do
@@ -71,7 +72,25 @@ returnStatement = do
     semiColon 
     return (Return value)
 
+arithmeticExpression :: Parser ArithmeticExp 
+arithmeticExpression = Expr.buildExpressionParser arithmeticOperators number
+
+number :: Parser ArithmeticExp 
+number = parenthesis arithmeticExpression
+            <|> (integer >>= \value -> return (Number value))
+
+
 valueExpression :: Parser ValueExp 
 valueExpression = parenthesis valueExpression
                 <|> (boolean >>= \value -> return (BoolValue value))
+                <|> (number >>= \value -> return (NumberValue value))
+
+assignStatement :: Parser Statement
+assignStatement = do
+    name <- identifier
+    reservedOperators "="
+    value <- valueExpression
+    semiColon
+    nextStatement <- statement
+    return (Assign name value nextStatement)
 
