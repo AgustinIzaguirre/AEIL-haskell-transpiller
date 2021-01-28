@@ -7,7 +7,7 @@ import qualified Text.Parsec.Expr as Expr
 
 import Lexer
 import AST
-    (Statement(Block), ValueExp(BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
+    (Statement(Return, Block), ValueExp(BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
       ArithmeticExp(ArithmeticBinaryOperation, Negate),
       BoolBinaryOperators(Or, And),
       BoolExp(FalseValue, TrueValue, BoolBinaryOperations, Not),
@@ -33,8 +33,8 @@ booleanOperators =
           Expr.Infix (reservedOperators "||" >> return (BoolBinaryOperations Or )) Expr.AssocLeft ]
     ]
 
-mainParser :: Parser Statement
-mainParser = whiteSpace >> block
+parseFile :: Parser Statement
+parseFile = whiteSpace >> block
 
 block :: Parser Statement
 block = parenthesis block
@@ -47,7 +47,7 @@ statementList = do
 
 statement :: Parser Statement 
 statement = ifStatement
-            -- <|> returnStatement
+            <|> returnStatement
 
 ifStatement :: Parser Statement
 ifStatement = do
@@ -64,10 +64,10 @@ boolean = parenthesis booleanExpression
             <|> (reserved "true" >> return TrueValue)
             <|> (reserved "false" >> return FalseValue)
 
--- returnStatement :: Parser Statement
--- returnStatement = do
---     reserved "return" >> return valueExp
+returnStatement :: Parser Statement
+returnStatement = do
+    reserved "return"
+    value <- boolean
+    semiColon 
+    return (Return (BoolValue value))
 
--- valueExp :: Parser ValueExp
--- valueExp = parenthesis valueExp
---             <|> return (BoolValue boolean)
