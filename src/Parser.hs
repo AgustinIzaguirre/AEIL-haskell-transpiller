@@ -67,7 +67,11 @@ boolean = parenthesis booleanExpression
 returnStatement :: Parser Statement
 returnStatement = do
     reserved "return"
-    value <- boolean
+    value <- valueExpression
     semiColon 
-    return (Return (BoolValue value))
+    return (Return value)
+
+valueExpression :: Parser ValueExp 
+valueExpression = parenthesis valueExpression
+                <|> (boolean >>= \value -> return (BoolValue value))
 
