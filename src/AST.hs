@@ -6,33 +6,37 @@ data Program = Root Function
                 | Multiple Function Program
                 deriving (Show)
 
-data Function = Name [Name] Block 
+-- data Function = Name [Name] Block 
+data Function = Name [Name] Statement 
                 deriving(Show)
 
-data Block = Empty
-                | Actions Statement Block
-                deriving(Show)
-                -- | ConditionalBlock Block
-                -- | LoopBlock Block
-                -- TODO
+-- data Block = Empty
+--                 | Actions Statement Block
+--                 deriving(Show)
+--                 -- | ConditionalBlock Block
+--                 -- | LoopBlock Block
+--                 -- TODO
 
 data Statement = Asign Name ValueExp
                 | Return ValueExp
+                | If BoolExp Statement
+                | IfElse BoolExp Statement Statement
+                | Block [Statement]
                 deriving(Show)
                 -- | PrintFunc
                 -- TODO
 
-data ValueExp = BoolExp
-                | ArithmeticExp
-                | StringExp
-                | APPLY FuncCall
+data ValueExp = BoolValue BoolExp
+                | NumberValue ArithmeticExp
+                | StringValue StringExp
+                | Apply FuncCall
                 deriving(Show)
 
 data FuncCall = Call Name [ValueExp]
                 deriving(Show)
 
-data BoolExp = True
-            | False
+data BoolExp = TrueValue
+            | FalseValue
             | BoolVar Name
             | BoolFunc FuncCall
             | BoolBinaryOperations BoolBinaryOperators BoolExp BoolExp
@@ -67,7 +71,7 @@ data ArithmeticBinaryOperator = Add
                                 deriving(Show)
 
 
-data StringExp = StringValue String
+data StringExp = StringConstant String
                 | StringVar Name
                 | StringFunc FuncCall
                 | StringBinaryOperation StringOperators StringExp StringExp
