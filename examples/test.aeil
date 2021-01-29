@@ -4,3 +4,6 @@ if ( true || false) {
         ;return false;
     } 
 }
+if ( true ) {
+    return true;
+}

@@ -42,7 +42,7 @@ block = parenthesis block
 
 statementList :: Parser Statement
 statementList = do 
-    statements <- sepBy1 statement semiColon
+    statements <- sepBy1 statement semiColon 
     return (if length statements == 1 then head statements else Block statements)
 
 statement :: Parser Statement 

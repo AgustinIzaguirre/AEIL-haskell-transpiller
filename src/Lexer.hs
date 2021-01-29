@@ -15,7 +15,7 @@ lexer = Token.makeTokenParser style
             Token.commentLine = "#",
             Token.reservedOpNames = operations,
             Token.reservedNames = reservedNames,
-            Token.commentStart = "\\*",
+            Token.commentStart = "/*",
             Token.commentEnd = "*/"
         }
 
