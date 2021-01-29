@@ -25,3 +25,6 @@ cabal.project.local~
 # IDE and system generated
 .DS_Store
 .vscode/
+
+# Project plan
+**TODO

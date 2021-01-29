@@ -54,7 +54,7 @@ ifStatement :: Parser Statement
 ifStatement = do
     reserved "if"
     condition <- parenthesis booleanExpression
-    ifBlock <- braces statement
+    ifBlock <- braces block
     return (If condition ifBlock)
 
 booleanExpression :: Parser BoolExp
@@ -91,6 +91,5 @@ assignStatement = do
     reservedOperators "="
     value <- valueExpression
     semiColon
-    nextStatement <- statement
-    return (Assign name value nextStatement)
+    return (Assign name value)
 

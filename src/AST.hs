@@ -17,7 +17,7 @@ data Function = Name [Name] Statement
 --                 -- | LoopBlock Block
 --                 -- TODO
 
-data Statement = Assign Name ValueExp Statement
+data Statement = Assign Name ValueExp
                 | Return ValueExp
                 | If BoolExp Statement
                 | IfElse BoolExp Statement Statement

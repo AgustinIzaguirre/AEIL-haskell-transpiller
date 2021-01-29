@@ -1,6 +1,6 @@
 if ( true || false) { 
     if (true) {
         testVar = 10;
-        return false;
+        ;return false;
     } 
 }
