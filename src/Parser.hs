@@ -131,10 +131,7 @@ arithmeticExpression = Expr.buildExpressionParser arithmeticOperators number
 number :: Parser ArithmeticExp 
 number = parenthesis arithmeticExpression
         <|> fmap Number integer
-        -- TODO with variables and constructor <|> fmap Var identifier
-
--- number = parenthesis arithmeticExpression
---         <|> (integer >>= \value -> return (Number value))
+        -- TODO with variables and constructor <|> fmap Name identifier
 
 valueExpression :: Parser ValueExp 
 valueExpression = parenthesis valueExpression
