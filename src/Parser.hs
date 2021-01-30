@@ -1,6 +1,6 @@
 module Parser where
 
-import Text.Parsec (try, sepBy1, (<|>))
+import Text.Parsec (try, (<|>))
 import Text.Parsec.String (Parser)
 
 import qualified Text.Parsec.Expr as Expr
