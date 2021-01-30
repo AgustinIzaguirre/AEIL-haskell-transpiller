@@ -1,13 +1,13 @@
 module Parser where
 
-import Text.Parsec (sepBy1, (<|>))
+import Text.Parsec (try, sepBy1, (<|>))
 import Text.Parsec.String (Parser)
 
 import qualified Text.Parsec.Expr as Expr
 
 import Lexer
 import AST
-    (Statement(Assign, Return, Block), ValueExp(NumberValue, BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
+    (Statement(Assign, Return), Block(Empty, Actions, SingleAction), ValueExp(NumberValue, BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
       ArithmeticExp(Number, ArithmeticBinaryOperation, Negate),
       BoolBinaryOperators(Or, And),
       BoolExp(FalseValue, TrueValue, BoolBinaryOperations, Not),
@@ -33,17 +33,29 @@ booleanOperators =
           Expr.Infix (reservedOperators "||" >> return (BoolBinaryOperations Or )) Expr.AssocLeft ]
     ]
 
-parseFile :: Parser Statement
+parseFile :: Parser Block
 parseFile = whiteSpace >> block
 
-block :: Parser Statement
-block = parenthesis block
-        <|> statementList
+block :: Parser Block 
+block = emptyBlock
+        <|> try multipleStatementBlock
+        <|> try singleStatementBlock
 
-statementList :: Parser Statement
-statementList = do 
-    statements <- sepBy1 statement semiColon 
-    return (if length statements == 1 then head statements else Block statements)
+emptyBlock :: Parser Block
+emptyBlock = do
+        semiColon
+        return Empty
+    
+singleStatementBlock :: Parser Block
+singleStatementBlock = do 
+                action <- statement
+                return (SingleAction action)
+
+multipleStatementBlock :: Parser Block
+multipleStatementBlock = do
+                    action <- statement
+                    nextActions <- block
+                    return (Actions action nextActions)
 
 statement :: Parser Statement 
 statement = ifStatement
@@ -78,7 +90,6 @@ arithmeticExpression = Expr.buildExpressionParser arithmeticOperators number
 number :: Parser ArithmeticExp 
 number = parenthesis arithmeticExpression
             <|> (integer >>= \value -> return (Number value))
-
 
 valueExpression :: Parser ValueExp 
 valueExpression = parenthesis valueExpression

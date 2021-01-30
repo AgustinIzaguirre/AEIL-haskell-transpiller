@@ -10,18 +10,18 @@ data Program = Root Function
 data Function = Name [Name] Statement 
                 deriving(Show)
 
--- data Block = Empty
---                 | Actions Statement Block
---                 deriving(Show)
+data Block = Empty
+            | Actions Statement Block
+            | SingleAction Statement
+            deriving(Show)
 --                 -- | ConditionalBlock Block
 --                 -- | LoopBlock Block
 --                 -- TODO
 
 data Statement = Assign Name ValueExp
                 | Return ValueExp
-                | If BoolExp Statement
-                | IfElse BoolExp Statement Statement
-                | Block [Statement]
+                | If BoolExp Block
+                | IfElse BoolExp Block Block
                 deriving(Show)
                 -- | PrintFunc
                 -- TODO

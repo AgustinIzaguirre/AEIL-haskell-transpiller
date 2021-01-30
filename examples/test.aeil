@@ -1,7 +1,8 @@
-if ( true || false) { 
+ if ( true || false) { 
     if (true) {
         testVar = 10;
-        ;return false;
+        testvar2 = 14;
+        return false;
     } 
 }
 if ( true ) {
