@@ -1,7 +1,8 @@
 module Parser where
 
-import Text.Parsec (try, (<|>))
+import Text.Parsec (char, try, (<|>))
 import Text.Parsec.String (Parser)
+import Text.Parsec.Prim (many)
 import qualified Text.Parsec.Expr as Expr
 import qualified Control.Monad.Identity as Data.Functor.Identity
 import qualified Text.Parsec as Text.Parsec.Prim
@@ -16,7 +17,7 @@ import Lexer
       reservedOperators,
       whiteSpace )
 import AST
-    (RelationalBinaryOperator(GreaterOrEqual, Greater, LessOrEqual, Less, NotEquals, Equals),  Statement(While, PrintFunc, IfElse, Assign, Return), Block(Empty, Actions, SingleAction), ValueExp(NumberValue, BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
+    (StringExp(StringConstant),  RelationalBinaryOperator(GreaterOrEqual, Greater, LessOrEqual, Less, NotEquals, Equals),  Statement(While, PrintFunc, IfElse, Assign, Return), Block(Empty, Actions, SingleAction), ValueExp(NumberValue, BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
       ArithmeticExp(Number, ArithmeticBinaryOperation, Negate),
       BoolBinaryOperators(Or, And),
       BoolExp(FalseValue, TrueValue, BoolBinaryOperations, Not, RelationalBinaryArithmetic),
@@ -73,7 +74,7 @@ statement = try assignStatement
             <|> try ifElseStatement
             <|> try ifStatement
             <|> try whileStatement
-            -- <|> printFuncStatement
+            <|> try printFuncStatement
 
 assignStatement :: Parser Statement
 assignStatement = do
@@ -107,11 +108,24 @@ whileStatement = do
     return (While condition whileBlock)
 
 -- TODO and fix
--- printFuncStatement :: Parser Statement
--- printFuncStatement = do
---     reserved "print"
---     text <- string
---     return (PrintFunc text)
+printFuncStatement :: Parser Statement
+printFuncStatement = do
+    reserved "print"
+    text <- parenthesis stringExpression
+    semiColon
+    return (PrintFunc text)
+
+stringExpression :: Parser StringExp
+stringExpression = stringConstant
+                    -- <|> stringOperation
+
+-- String only supports characters, especial characters or escaped are not supported"
+stringConstant :: Parser StringExp
+stringConstant = do
+    reservedOperators "\""
+    text <- many identifier 
+    reservedOperators "\""
+    return (StringConstant (unwords text))    
 
 booleanExpression :: Parser BoolExp
 booleanExpression = Expr.buildExpressionParser booleanOperators boolean

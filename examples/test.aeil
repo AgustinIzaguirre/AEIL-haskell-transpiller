@@ -15,6 +15,6 @@ if (false) {
 else {
     a = 100;
     while (!true) {
-        ;
+        print("Hello world");
     }
 }

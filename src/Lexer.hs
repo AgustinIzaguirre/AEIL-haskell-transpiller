@@ -9,7 +9,7 @@ import qualified Text.Parsec as Text.Parsec.Prim
 lexer :: Token.TokenParser ()
 lexer = Token.makeTokenParser style
     where
-        operations = ["+", "*", "-", "\\", "%", "**", "&&", "||", "!", "++", "=", "==", "!=", "<", "<=", ">", ">="]
+        operations = ["+", "*", "-", "\\", "%", "**", "&&", "||", "!", "++", "=", "==", "!=", "<", "<=", ">", ">=", "\""]
         reservedNames = ["func", "if", "else", "while", "true", "false"]
         style = emptyDef {
             Token.commentLine = "#",
