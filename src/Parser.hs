@@ -131,10 +131,10 @@ booleanExpression :: Parser BoolExp
 booleanExpression = Expr.buildExpressionParser booleanOperators boolean
 
 boolean :: Parser BoolExp 
-boolean = parenthesis booleanExpression
-            <|> (reserved "true" >> return TrueValue)
-            <|> (reserved "false" >> return FalseValue)
-            -- <|> realtionalExpression
+boolean = try (parenthesis booleanExpression)
+            <|> try (reserved "true" >> return TrueValue)
+            <|> try (reserved "false" >> return FalseValue)
+            <|> try realtionalExpression
 
 returnStatement :: Parser Statement
 returnStatement = do
