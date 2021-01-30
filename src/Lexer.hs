@@ -9,7 +9,7 @@ import qualified Text.Parsec as Text.Parsec.Prim
 lexer :: Token.TokenParser ()
 lexer = Token.makeTokenParser style
     where
-        operations = ["+", "*", "-", ";", "\\", "%", "**", "&&", "||", "!", "++", "=", "==", "!="]
+        operations = ["+", "*", "-", "\\", "%", "**", "&&", "||", "!", "++", "=", "==", "!="]
         reservedNames = ["func", "if", "else", "while", "true", "false"]
         style = emptyDef {
             Token.commentLine = "#",
@@ -51,3 +51,6 @@ reservedOperators = Token.reservedOp lexer
 
 whiteSpace :: Text.Parsec.Prim.ParsecT String () Data.Functor.Identity.Identity ()
 whiteSpace = Token.whiteSpace lexer
+
+string :: Token.GenTokenParser s u m -> Text.Parsec.Prim.ParsecT s u m String
+string = Token.stringLiteral

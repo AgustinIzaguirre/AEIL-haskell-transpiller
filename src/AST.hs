@@ -6,25 +6,22 @@ data Program = Root Function
                 | Multiple Function Program
                 deriving (Show)
 
--- data Function = Name [Name] Block 
-data Function = Name [Name] Statement 
+data Function = Name [Name] Block 
                 deriving(Show)
 
 data Block = Empty
             | Actions Statement Block
             | SingleAction Statement
             deriving(Show)
---                 -- | ConditionalBlock Block
---                 -- | LoopBlock Block
---                 -- TODO
 
 data Statement = Assign Name ValueExp
                 | Return ValueExp
                 | If BoolExp Block
                 | IfElse BoolExp Block Block
+                | While BoolExp Block
+                | PrintFunc
                 deriving(Show)
-                -- | PrintFunc
-                -- TODO
+                -- FuncCall TODO
 
 data ValueExp = BoolValue BoolExp
                 | NumberValue ArithmeticExp
