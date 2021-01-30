@@ -42,7 +42,7 @@ booleanOperators =
           Expr.Infix (reservedOperators "||" >> return (BoolBinaryOperations Or )) Expr.AssocLeft ]
     ]
 
--- TODO check that after parsing everything there is nothing left or spaces
+-- TODO check that after parsing everything there is nothing left or spaces or comments
 parseFile :: Parser Block
 parseFile = whiteSpace >> block
 
