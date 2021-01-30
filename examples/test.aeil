@@ -1,5 +1,20 @@
-if ( true || false) { 
+ if ( true || false) { 
     if (true) {
+        testVar = 10;
+        testvar2 = 14;
         return false;
     } 
+}
+if ( true ) {
+    return true;
+}
+
+if (false) {
+    ;
+}
+else {
+    a = 100;
+    while (!true) {
+        ;
+    }
 }

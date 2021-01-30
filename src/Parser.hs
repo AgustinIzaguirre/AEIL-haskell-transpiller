@@ -1,24 +1,32 @@
 module Parser where
 
-import Text.Parsec (sepBy1, (<|>))
+import Text.Parsec (try, (<|>))
 import Text.Parsec.String (Parser)
-
 import qualified Text.Parsec.Expr as Expr
-
-import Lexer
-import AST
-    (Statement(Return, Block), ValueExp(BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
-      ArithmeticExp(ArithmeticBinaryOperation, Negate),
-      BoolBinaryOperators(Or, And),
-      BoolExp(FalseValue, TrueValue, BoolBinaryOperations, Not),
-      Program )
 import qualified Control.Monad.Identity as Data.Functor.Identity
 import qualified Text.Parsec as Text.Parsec.Prim
 
+import Lexer
+    ( integer,
+      parenthesis,
+      braces,
+      semiColon,
+      identifier,
+      reserved,
+      reservedOperators,
+      whiteSpace )
+import AST
+    (RelationalBinaryOperator(GreaterOrEqual, Greater, LessOrEqual, Less, NotEquals, Equals),  Statement(While, PrintFunc, IfElse, Assign, Return), Block(Empty, Actions, SingleAction), ValueExp(NumberValue, BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
+      ArithmeticExp(Number, ArithmeticBinaryOperation, Negate),
+      BoolBinaryOperators(Or, And),
+      BoolExp(FalseValue, TrueValue, BoolBinaryOperations, Not, RelationalBinaryArithmetic),
+      Program )
+
+arithmeticOperators :: [[Expr.Operator String () Data.Functor.Identity.Identity ArithmeticExp]]
 arithmeticOperators =
             [
                 -- TODO add pow here maybe
-                [ Expr.Prefix (reservedOperators "-"   >> return Negate) ],
+                [ Expr.Prefix (reservedOperators "-" >> return Negate) ],
                 [ Expr.Infix (reservedOperators "*" >> return (ArithmeticBinaryOperation Multiply )) Expr.AssocLeft,
                   Expr.Infix (reservedOperators "/" >> return (ArithmeticBinaryOperation Divide )) Expr.AssocLeft,
                   Expr.Infix (reservedOperators "%" >> return (ArithmeticBinaryOperation Modulo )) Expr.AssocLeft ],
@@ -26,35 +34,84 @@ arithmeticOperators =
                   Expr.Infix (reservedOperators "-" >> return (ArithmeticBinaryOperation Minus )) Expr.AssocLeft ]
             ]
 
+booleanOperators :: [[Expr.Operator String () Data.Functor.Identity.Identity BoolExp]]
 booleanOperators = 
     [
-        [ Expr.Prefix (reservedOperators "!"   >> return Not) ],
+        [ Expr.Prefix (reservedOperators "!" >> return Not) ],
         [ Expr.Infix (reservedOperators "&&" >> return (BoolBinaryOperations And )) Expr.AssocLeft,
           Expr.Infix (reservedOperators "||" >> return (BoolBinaryOperations Or )) Expr.AssocLeft ]
     ]
 
-parseFile :: Parser Statement
+-- TODO check that after parsing everything there is nothing left or spaces
+parseFile :: Parser Block
 parseFile = whiteSpace >> block
 
-block :: Parser Statement
-block = parenthesis block
-        <|> statementList
+block :: Parser Block 
+block = emptyBlock
+        <|> try multipleStatementBlock
+        <|> try singleStatementBlock
 
-statementList :: Parser Statement
-statementList = do 
-    statements <- sepBy1 statement semiColon
-    return (if length statements == 1 then head statements else Block statements)
+emptyBlock :: Parser Block
+emptyBlock = do
+        semiColon
+        return Empty
+    
+singleStatementBlock :: Parser Block
+singleStatementBlock = do 
+                action <- statement
+                return (SingleAction action)
+
+multipleStatementBlock :: Parser Block
+multipleStatementBlock = do
+                    action <- statement
+                    nextActions <- block
+                    return (Actions action nextActions)
 
 statement :: Parser Statement 
-statement = ifStatement
-            <|> returnStatement
+statement = try assignStatement
+            <|> try returnStatement
+            <|> try ifElseStatement
+            <|> try ifStatement
+            <|> try whileStatement
+            -- <|> printFuncStatement
+
+assignStatement :: Parser Statement
+assignStatement = do
+    name <- identifier
+    reservedOperators "="
+    value <- valueExpression
+    semiColon
+    return (Assign name value)
 
 ifStatement :: Parser Statement
 ifStatement = do
     reserved "if"
     condition <- parenthesis booleanExpression
-    ifBlock <- braces statement
+    ifBlock <- braces block
     return (If condition ifBlock)
+
+ifElseStatement :: Parser Statement
+ifElseStatement = do
+    reserved "if"
+    ifCondition <- parenthesis booleanExpression
+    ifBlock <- braces block
+    reserved "else"
+    elseBlock <- braces block
+    return (IfElse ifCondition ifBlock elseBlock)
+
+whileStatement :: Parser Statement
+whileStatement = do
+    reserved "while"
+    condition <- parenthesis booleanExpression
+    whileBlock <- braces block
+    return (While condition whileBlock)
+
+-- TODO and fix
+-- printFuncStatement :: Parser Statement
+-- printFuncStatement = do
+--     reserved "print"
+--     text <- string
+--     return (PrintFunc text)
 
 booleanExpression :: Parser BoolExp
 booleanExpression = Expr.buildExpressionParser booleanOperators boolean
@@ -63,11 +120,44 @@ boolean :: Parser BoolExp
 boolean = parenthesis booleanExpression
             <|> (reserved "true" >> return TrueValue)
             <|> (reserved "false" >> return FalseValue)
+            -- <|> realtionalExpression
 
 returnStatement :: Parser Statement
 returnStatement = do
     reserved "return"
-    value <- boolean
+    value <- valueExpression
     semiColon 
-    return (Return (BoolValue value))
+    return (Return value)
+
+arithmeticExpression :: Parser ArithmeticExp 
+arithmeticExpression = Expr.buildExpressionParser arithmeticOperators number
+
+number :: Parser ArithmeticExp 
+number = parenthesis arithmeticExpression
+        <|> fmap Number integer
+        -- TODO with variables and constructor <|> fmap Name identifier
+
+valueExpression :: Parser ValueExp 
+valueExpression = parenthesis valueExpression
+                <|> (booleanExpression >>= \value -> return (BoolValue value))
+                <|> (arithmeticExpression >>= \value -> return (NumberValue value))
+
+realtionalExpression :: Parser BoolExp
+realtionalExpression = arithmeticRelation
+                    -- TODO <|> stringRelation
+
+arithmeticRelation :: Parser BoolExp
+arithmeticRelation = do
+                first <- arithmeticExpression
+                operator <- relationalBinaryOperator
+                second <- arithmeticExpression
+                return (RelationalBinaryArithmetic operator first second)
+
+relationalBinaryOperator :: Parser RelationalBinaryOperator
+relationalBinaryOperator = (reservedOperators "==" >> return Equals)
+                        <|> (reservedOperators "!=" >> return NotEquals)
+                        <|> (reservedOperators "<" >> return Less)
+                        <|> (reservedOperators "<=" >> return LessOrEqual)
+                        <|> (reservedOperators ">" >> return Greater)
+                        <|> (reservedOperators ">=" >> return GreaterOrEqual)
 
