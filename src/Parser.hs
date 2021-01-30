@@ -2,23 +2,30 @@ module Parser where
 
 import Text.Parsec (try, (<|>))
 import Text.Parsec.String (Parser)
-
 import qualified Text.Parsec.Expr as Expr
+import qualified Control.Monad.Identity as Data.Functor.Identity
+import qualified Text.Parsec as Text.Parsec.Prim
 
 import Lexer
+    ( integer,
+      parenthesis,
+      braces,
+      semiColon,
+      identifier,
+      reserved,
+      reservedOperators,
+      whiteSpace )
 import AST
     (Statement(While, PrintFunc, IfElse, Assign, Return), Block(Empty, Actions, SingleAction), ValueExp(NumberValue, BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
       ArithmeticExp(Number, ArithmeticBinaryOperation, Negate),
       BoolBinaryOperators(Or, And),
       BoolExp(FalseValue, TrueValue, BoolBinaryOperations, Not),
       Program )
-import qualified Control.Monad.Identity as Data.Functor.Identity
-import qualified Text.Parsec as Text.Parsec.Prim
 
 arithmeticOperators =
             [
                 -- TODO add pow here maybe
-                -- [ Expr.Prefix (reservedOperators "-" >> return Negate) ],
+                [ Expr.Prefix (reservedOperators "-" >> return Negate) ],
                 [ Expr.Infix (reservedOperators "*" >> return (ArithmeticBinaryOperation Multiply )) Expr.AssocLeft,
                   Expr.Infix (reservedOperators "/" >> return (ArithmeticBinaryOperation Divide )) Expr.AssocLeft,
                   Expr.Infix (reservedOperators "%" >> return (ArithmeticBinaryOperation Modulo )) Expr.AssocLeft ],
@@ -123,11 +130,15 @@ arithmeticExpression = Expr.buildExpressionParser arithmeticOperators number
 
 number :: Parser ArithmeticExp 
 number = parenthesis arithmeticExpression
-        <|> (integer >>= \value -> return (Number value))
+        <|> fmap Number integer
+        -- TODO with variables and constructor <|> fmap Var identifier
+
+-- number = parenthesis arithmeticExpression
+--         <|> (integer >>= \value -> return (Number value))
 
 valueExpression :: Parser ValueExp 
 valueExpression = parenthesis valueExpression
-                <|> (boolean >>= \value -> return (BoolValue value))
-                <|> (number >>= \value -> return (NumberValue value))
+                <|> (booleanExpression >>= \value -> return (BoolValue value))
+                <|> (arithmeticExpression >>= \value -> return (NumberValue value))
 
 
