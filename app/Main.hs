@@ -2,7 +2,7 @@ module Main where
 
 import System.Environment ( getArgs )
 import Parser
-import AST (Block, Statement)
+import AST (Program, Block, Statement)
 import Text.Parsec
 
 main :: IO ()
@@ -15,7 +15,7 @@ main = do
             print result
         _ -> putStrLn "Wrong number of arguments, should provide one file."
 
-compile :: String -> IO Block
+compile :: String -> IO Program
 compile code = do 
     case parse parseFile  "" code of
         Left error  -> print error >> fail "parse error"

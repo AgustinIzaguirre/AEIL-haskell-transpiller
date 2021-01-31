@@ -1,13 +1,14 @@
 module Parser where
 
-import Text.Parsec (try, (<|>))
+import Text.Parsec (char, try, (<|>))
 import Text.Parsec.String (Parser)
+import Text.Parsec.Prim (many)
 import qualified Text.Parsec.Expr as Expr
 import qualified Control.Monad.Identity as Data.Functor.Identity
 import qualified Text.Parsec as Text.Parsec.Prim
 
 import Lexer
-    ( integer,
+    (commaSeparated, string,  integer,
       parenthesis,
       braces,
       semiColon,
@@ -16,7 +17,7 @@ import Lexer
       reservedOperators,
       whiteSpace )
 import AST
-    (RelationalBinaryOperator(GreaterOrEqual, Greater, LessOrEqual, Less, NotEquals, Equals),  Statement(While, PrintFunc, IfElse, Assign, Return), Block(Empty, Actions, SingleAction), ValueExp(NumberValue, BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
+    (Program(Root, Multiple), Function(Func),  Name, StringExp(StringConstant),  RelationalBinaryOperator(GreaterOrEqual, Greater, LessOrEqual, Less, NotEquals, Equals),  Statement(While, PrintFunc, IfElse, Assign, Return, FuncCall), Block(Empty, Actions, SingleAction), ValueExp(Var, Apply, NumberValue, BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
       ArithmeticExp(Number, ArithmeticBinaryOperation, Negate),
       BoolBinaryOperators(Or, And),
       BoolExp(FalseValue, TrueValue, BoolBinaryOperations, Not, RelationalBinaryArithmetic),
@@ -42,9 +43,38 @@ booleanOperators =
           Expr.Infix (reservedOperators "||" >> return (BoolBinaryOperations Or )) Expr.AssocLeft ]
     ]
 
--- TODO check that after parsing everything there is nothing left or spaces
-parseFile :: Parser Block
-parseFile = whiteSpace >> block
+-- TODO check that after parsing everything there is nothing left or spaces or comments
+parseFile :: Parser Program
+parseFile = whiteSpace >> program
+
+program :: Parser Program 
+program = try multipleFunctionsProgram
+        <|> singleFunctionProgram
+
+singleFunctionProgram :: Parser Program
+singleFunctionProgram = do 
+                func <- function
+                return (Root func)
+
+multipleFunctionsProgram :: Parser Program
+multipleFunctionsProgram = do
+                    func <- function
+                    nextFunctions <- program
+                    return (Multiple func nextFunctions)
+
+function :: Parser Function
+function = do
+    reserved "func"
+    funcName <- identifier
+    funcParameters <- parenthesis parameters
+    funcBlock <- braces block
+    return (Func funcName funcParameters funcBlock)
+
+parameter :: Parser Name
+parameter = identifier
+
+parameters :: Parser [Name]
+parameters = commaSeparated parameter
 
 block :: Parser Block 
 block = emptyBlock
@@ -73,7 +103,8 @@ statement = try assignStatement
             <|> try ifElseStatement
             <|> try ifStatement
             <|> try whileStatement
-            -- <|> printFuncStatement
+            <|> try printFuncStatement
+            <|> try funcCallStatement
 
 assignStatement :: Parser Statement
 assignStatement = do
@@ -106,21 +137,35 @@ whileStatement = do
     whileBlock <- braces block
     return (While condition whileBlock)
 
--- TODO and fix
--- printFuncStatement :: Parser Statement
--- printFuncStatement = do
---     reserved "print"
---     text <- string
---     return (PrintFunc text)
+printFuncStatement :: Parser Statement
+printFuncStatement = do
+    reserved "print"
+    text <- parenthesis stringExpression
+    semiColon
+    return (PrintFunc text)
+
+funcCallStatement :: Parser Statement
+funcCallStatement = do
+    funcName <- identifier
+    funcArguments <- parenthesis arguments
+    semiColon
+    return (FuncCall funcName funcArguments)
+
+arguments :: Parser [ValueExp]
+arguments = commaSeparated valueExpression
+
+stringExpression :: Parser StringExp
+stringExpression = string >>= \text -> return (StringConstant text)
+                    -- <|> stringOperation  
 
 booleanExpression :: Parser BoolExp
 booleanExpression = Expr.buildExpressionParser booleanOperators boolean
 
 boolean :: Parser BoolExp 
-boolean = parenthesis booleanExpression
-            <|> (reserved "true" >> return TrueValue)
-            <|> (reserved "false" >> return FalseValue)
-            -- <|> realtionalExpression
+boolean = try (parenthesis booleanExpression)
+            <|> try (reserved "true" >> return TrueValue)
+            <|> try (reserved "false" >> return FalseValue)
+            <|> try realtionalExpression
 
 returnStatement :: Parser Statement
 returnStatement = do
@@ -141,6 +186,14 @@ valueExpression :: Parser ValueExp
 valueExpression = parenthesis valueExpression
                 <|> (booleanExpression >>= \value -> return (BoolValue value))
                 <|> (arithmeticExpression >>= \value -> return (NumberValue value))
+                <|> try applyFunc
+                <|> try (identifier >>= \varName -> return (Var varName))
+
+applyFunc :: Parser ValueExp
+applyFunc = do
+    funcName <- identifier
+    funcArguments <- parenthesis arguments
+    return (Apply funcName funcArguments)
 
 realtionalExpression :: Parser BoolExp
 realtionalExpression = arithmeticRelation

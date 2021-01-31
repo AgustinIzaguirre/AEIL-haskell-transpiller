@@ -1,3 +1,4 @@
+func main() {
  if ( true || false) { 
     if (true) {
         testVar = 10;
@@ -9,12 +10,17 @@ if ( true ) {
     return true;
 }
 
-if (false) {
+if (10 < 100) {
     ;
 }
 else {
     a = 100;
     while (!true) {
-        ;
+        print("Hello world");
     }
+}
+
+if ((100 == 100) && -1 < 0) {
+    print("Always true");
+}
 }

@@ -9,7 +9,7 @@ import qualified Text.Parsec as Text.Parsec.Prim
 lexer :: Token.TokenParser ()
 lexer = Token.makeTokenParser style
     where
-        operations = ["+", "*", "-", "\\", "%", "**", "&&", "||", "!", "++", "=", "==", "!=", "<", "<=", ">", ">="]
+        operations = ["+", "*", "-", "\\", "%", "**", "&&", "||", "!", "++", "=", "==", "!=", "<", "<=", ">", ">=", "\""]
         reservedNames = ["func", "if", "else", "while", "true", "false"]
         style = emptyDef {
             Token.commentLine = "#",
@@ -52,5 +52,22 @@ reservedOperators = Token.reservedOp lexer
 whiteSpace :: Text.Parsec.Prim.ParsecT String () Data.Functor.Identity.Identity ()
 whiteSpace = Token.whiteSpace lexer
 
-string :: Token.GenTokenParser s u m -> Text.Parsec.Prim.ParsecT s u m String
-string = Token.stringLiteral
+escapedCharacter :: Parser String
+escapedCharacter = do
+    backSlash <- Text.Parsec.Prim.char '\\'
+    character <- Text.Parsec.Prim.oneOf "\\\"0nrvtbf" -- all the characters which can be escaped
+    return [backSlash, character]
+
+nonEscapedCharacter :: Parser Char
+nonEscapedCharacter = Text.Parsec.Prim.noneOf "\\\"\0\n\r\v\t\b\f"
+
+character :: Parser String
+character = fmap return nonEscapedCharacter
+                        Text.Parsec.Prim.<|> escapedCharacter
+
+string :: Parser String
+string = do
+    Text.Parsec.Prim.char '"'
+    strings <- Text.Parsec.Prim.many character
+    Text.Parsec.Prim.char '"'
+    return (concat strings)

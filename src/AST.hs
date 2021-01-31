@@ -6,7 +6,7 @@ data Program = Root Function
                 | Multiple Function Program
                 deriving (Show)
 
-data Function = Name [Name] Block 
+data Function = Func Name [Name] Block 
                 deriving(Show)
 
 data Block = Empty
@@ -19,23 +19,23 @@ data Statement = Assign Name ValueExp
                 | If BoolExp Block
                 | IfElse BoolExp Block Block
                 | While BoolExp Block
-                | PrintFunc
+                | PrintFunc StringExp
+                | FuncCall Name [ValueExp]
                 deriving(Show)
                 -- FuncCall TODO
 
 data ValueExp = BoolValue BoolExp
                 | NumberValue ArithmeticExp
                 | StringValue StringExp
-                | Apply FuncCall
+                | Apply Name [ValueExp]
+                | Var Name
                 deriving(Show)
 
-data FuncCall = Call Name [ValueExp]
-                deriving(Show)
 
 data BoolExp = TrueValue
             | FalseValue
             | BoolVar Name
-            | BoolFunc FuncCall
+            -- | BoolFunc FuncCall
             | BoolBinaryOperations BoolBinaryOperators BoolExp BoolExp
             | Not BoolExp
             | RelationalBinaryArithmetic RelationalBinaryOperator ArithmeticExp ArithmeticExp
@@ -55,7 +55,7 @@ data BoolBinaryOperators = And
 
 data ArithmeticExp = Number Integer
                | NumVar Name
-               | NumFunc FuncCall
+            --    | NumFunc FuncCall
                | Negate ArithmeticExp
                | ArithmeticBinaryOperation ArithmeticBinaryOperator ArithmeticExp ArithmeticExp
                deriving(Show)
@@ -70,7 +70,7 @@ data ArithmeticBinaryOperator = Add
 
 data StringExp = StringConstant String
                 | StringVar Name
-                | StringFunc FuncCall
+                -- | StringFunc FuncCall
                 | StringBinaryOperation StringOperators StringExp StringExp
                 deriving(Show)
 

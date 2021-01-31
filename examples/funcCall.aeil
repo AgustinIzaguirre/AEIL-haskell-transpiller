@@ -1,0 +1,9 @@
+func main() {
+    testVar = 10;
+    a = testFunc(10 * 10 + 14, true || false, testVar, testFunc(testVar), testFunc());
+    testFunc(10 * 10 + 14, true || false);
+}
+
+func testFunc(a,b,c) {
+    print("Calling testFunc");
+}
