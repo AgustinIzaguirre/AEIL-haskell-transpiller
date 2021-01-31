@@ -5,3 +5,16 @@ func testFunc() {
 func second(b) {
     print("Hello world true");
 }
+
+func third(a, b, c) {
+    while (10 < 100) {
+        print("Inside while");
+        if (true) {
+            print("Always true");
+        }
+    }
+} 
+
+func fourth() {
+    print("Parses all functions");
+}

@@ -49,7 +49,7 @@ parseFile = whiteSpace >> program
 
 program :: Parser Program 
 program = try multipleFunctionsProgram
-        <|> try singleFunctionProgram
+        <|> singleFunctionProgram
 
 singleFunctionProgram :: Parser Program
 singleFunctionProgram = do 
