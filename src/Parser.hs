@@ -8,7 +8,7 @@ import qualified Control.Monad.Identity as Data.Functor.Identity
 import qualified Text.Parsec as Text.Parsec.Prim
 
 import Lexer
-    ( integer,
+    (string,  integer,
       parenthesis,
       braces,
       semiColon,
@@ -116,16 +116,8 @@ printFuncStatement = do
     return (PrintFunc text)
 
 stringExpression :: Parser StringExp
-stringExpression = stringConstant
-                    -- <|> stringOperation
-
--- String only supports characters, especial characters or escaped are not supported"
-stringConstant :: Parser StringExp
-stringConstant = do
-    reservedOperators "\""
-    text <- many identifier 
-    reservedOperators "\""
-    return (StringConstant (unwords text))    
+stringExpression = string >>= \text -> return (StringConstant text)
+                    -- <|> stringOperation  
 
 booleanExpression :: Parser BoolExp
 booleanExpression = Expr.buildExpressionParser booleanOperators boolean

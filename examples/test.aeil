@@ -9,7 +9,7 @@ if ( true ) {
     return true;
 }
 
-if ((100 == 100) && (-1 < 0)) {
+if (10 < 100) {
     ;
 }
 else {
@@ -17,4 +17,8 @@ else {
     while (!true) {
         print("Hello world");
     }
+}
+
+if ((100 == 100) && -1 < 0) {
+    print("Always true");
 }
