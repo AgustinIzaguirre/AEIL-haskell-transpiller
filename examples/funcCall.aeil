@@ -1,9 +1,7 @@
 func main() {
     testVar = 10;
-    testVar2 = true;
-    returnValue = 10;
-    testFunc(true, testVar, 10 * 10 + 14);
-    testFunc();
+    a = testFunc(10 * 10 + 14, true || false, testVar, testFunc(testVar), testFunc());
+    testFunc(10 * 10 + 14, true || false);
 }
 
 func testFunc(a,b,c) {

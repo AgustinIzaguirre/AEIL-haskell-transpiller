@@ -186,8 +186,8 @@ valueExpression :: Parser ValueExp
 valueExpression = parenthesis valueExpression
                 <|> (booleanExpression >>= \value -> return (BoolValue value))
                 <|> (arithmeticExpression >>= \value -> return (NumberValue value))
-                <|> (identifier >>= \varName -> return (Var varName))
-                <|> applyFunc
+                <|> try applyFunc
+                <|> try (identifier >>= \varName -> return (Var varName))
 
 applyFunc :: Parser ValueExp
 applyFunc = do
