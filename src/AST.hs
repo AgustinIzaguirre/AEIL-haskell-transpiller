@@ -6,7 +6,7 @@ data Program = Root Function
                 | Multiple Function Program
                 deriving (Show)
 
-data Function = Name [Name] Block 
+data Function = Func Name [Name] Block 
                 deriving(Show)
 
 data Block = Empty

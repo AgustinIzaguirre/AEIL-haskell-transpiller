@@ -1,0 +1,21 @@
+func main() {
+if (true) {
+    print("Inside while");
+} else {
+    ;
+}
+while (true) {
+    print("Inside while");
+}
+if (true) {
+    ;
+} else {
+    ;
+}
+if (true) {
+    ;
+} else {
+    ;
+}
+a = 10;
+}

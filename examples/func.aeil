@@ -1,0 +1,7 @@
+func testFunc() {
+    ;
+}
+
+func second(b) {
+    print("Hello world true");
+}
