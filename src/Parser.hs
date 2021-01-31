@@ -17,7 +17,7 @@ import Lexer
       reservedOperators,
       whiteSpace )
 import AST
-    (Program(Root, Multiple), Function(Func),  Name, StringExp(StringConstant),  RelationalBinaryOperator(GreaterOrEqual, Greater, LessOrEqual, Less, NotEquals, Equals),  Statement(While, PrintFunc, IfElse, Assign, Return), Block(Empty, Actions, SingleAction), ValueExp(NumberValue, BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
+    (Program(Root, Multiple), Function(Func),  Name, StringExp(StringConstant),  RelationalBinaryOperator(GreaterOrEqual, Greater, LessOrEqual, Less, NotEquals, Equals),  Statement(While, PrintFunc, IfElse, Assign, Return, FuncCall), Block(Empty, Actions, SingleAction), ValueExp(Var, Apply, NumberValue, BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
       ArithmeticExp(Number, ArithmeticBinaryOperation, Negate),
       BoolBinaryOperators(Or, And),
       BoolExp(FalseValue, TrueValue, BoolBinaryOperations, Not, RelationalBinaryArithmetic),
@@ -104,6 +104,7 @@ statement = try assignStatement
             <|> try ifStatement
             <|> try whileStatement
             <|> try printFuncStatement
+            <|> try funcCallStatement
 
 assignStatement :: Parser Statement
 assignStatement = do
@@ -143,6 +144,16 @@ printFuncStatement = do
     semiColon
     return (PrintFunc text)
 
+funcCallStatement :: Parser Statement
+funcCallStatement = do
+    funcName <- identifier
+    funcArguments <- parenthesis arguments
+    semiColon
+    return (FuncCall funcName funcArguments)
+
+arguments :: Parser [ValueExp]
+arguments = commaSeparated valueExpression
+
 stringExpression :: Parser StringExp
 stringExpression = string >>= \text -> return (StringConstant text)
                     -- <|> stringOperation  
@@ -175,6 +186,14 @@ valueExpression :: Parser ValueExp
 valueExpression = parenthesis valueExpression
                 <|> (booleanExpression >>= \value -> return (BoolValue value))
                 <|> (arithmeticExpression >>= \value -> return (NumberValue value))
+                <|> (identifier >>= \varName -> return (Var varName))
+                <|> applyFunc
+
+applyFunc :: Parser ValueExp
+applyFunc = do
+    funcName <- identifier
+    funcArguments <- parenthesis arguments
+    return (Apply funcName funcArguments)
 
 realtionalExpression :: Parser BoolExp
 realtionalExpression = arithmeticRelation
