@@ -66,15 +66,15 @@ function :: Parser Function
 function = do
     reserved "func"
     funcName <- identifier
-    funcArguments <- parenthesis arguments
+    funcParameters <- parenthesis parameters
     funcBlock <- braces block
-    return (Func funcName funcArguments funcBlock)
+    return (Func funcName funcParameters funcBlock)
 
-argument :: Parser Name
-argument = identifier
+parameter :: Parser Name
+parameter = identifier
 
-arguments :: Parser [Name]
-arguments = commaSeparated argument
+parameters :: Parser [Name]
+parameters = commaSeparated parameter
 
 block :: Parser Block 
 block = emptyBlock
