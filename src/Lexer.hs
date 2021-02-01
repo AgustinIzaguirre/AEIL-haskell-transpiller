@@ -67,7 +67,9 @@ character = fmap return nonEscapedCharacter
 
 string :: Parser String
 string = do
+    whiteSpace
     Text.Parsec.Prim.char '"'
     strings <- Text.Parsec.Prim.many character
     Text.Parsec.Prim.char '"'
+    whiteSpace
     return (concat strings)

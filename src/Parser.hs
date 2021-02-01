@@ -17,7 +17,11 @@ import Lexer
       reservedOperators,
       whiteSpace )
 import AST
-    (Program(Root, Multiple), Function(Func),  Name, StringExp(StringConstant),  RelationalBinaryOperator(GreaterOrEqual, Greater, LessOrEqual, Less, NotEquals, Equals),  Statement(While, PrintFunc, IfElse, Assign, Return, FuncCall), Block(Empty, Actions, SingleAction), ValueExp(Read, Var, Apply, NumberValue, BoolValue),  Statement(If),  ArithmeticBinaryOperator(Power, Modulo, Minus, Add, Multiply, Divide),
+    (StringOperators(Concat), Program(Root, Multiple), Function(Func),  Name, StringExp(StringBinaryOperation, StringConstant),
+      RelationalBinaryOperator(GreaterOrEqual, Greater, LessOrEqual, Less, NotEquals, Equals),
+      Statement(While, PrintFunc, IfElse, Assign, Return, FuncCall), Block(Empty, Actions, SingleAction),
+      ValueExp(StringValue, Read, Var, Apply, NumberValue, BoolValue),  Statement(If),
+        ArithmeticBinaryOperator(Power, Modulo, Minus, Add, Multiply, Divide),
       ArithmeticExp(Number, ArithmeticBinaryOperation, Negate),
       BoolBinaryOperators(Or, And),
       BoolExp(RelationalBinaryString, FalseValue, TrueValue, BoolBinaryOperations, Not, RelationalBinaryArithmetic),
@@ -41,6 +45,12 @@ booleanOperators =
         [ Expr.Prefix (reservedOperators "!" >> return Not) ],
         [ Expr.Infix (reservedOperators "&&" >> return (BoolBinaryOperations And )) Expr.AssocLeft,
           Expr.Infix (reservedOperators "||" >> return (BoolBinaryOperations Or )) Expr.AssocLeft ]
+    ]
+
+stringOperators :: [[Expr.Operator String () Data.Functor.Identity.Identity StringExp]]
+stringOperators =
+    [
+        [ Expr.Infix (reservedOperators "++" >> return (StringBinaryOperation Concat )) Expr.AssocLeft ]
     ]
 
 -- TODO check that after parsing everything there is nothing left or spaces or comments
@@ -155,8 +165,11 @@ arguments :: Parser [ValueExp]
 arguments = commaSeparated valueExpression
 
 stringExpression :: Parser StringExp
-stringExpression = string >>= \text -> return (StringConstant text)
-                    -- <|> stringOperation  TODO add concat
+stringExpression = Expr.buildExpressionParser stringOperators stringValue
+
+stringValue :: Parser StringExp
+stringValue = parenthesis stringExpression
+            <|> try (string >>= \text -> return (StringConstant text))
 
 booleanExpression :: Parser BoolExp
 booleanExpression = Expr.buildExpressionParser booleanOperators boolean
@@ -179,12 +192,13 @@ arithmeticExpression = Expr.buildExpressionParser arithmeticOperators number
 
 number :: Parser ArithmeticExp 
 number = try (fmap Number integer)
-        <|> parenthesis arithmeticExpression
+        <|> try (parenthesis arithmeticExpression)
         -- TODO with variables and constructor <|> fmap Name identifier
 
 valueExpression :: Parser ValueExp 
 valueExpression = (booleanExpression >>= \value -> return (BoolValue value))
                 <|> (arithmeticExpression >>= \value -> return (NumberValue value))
+                <|> (stringExpression >>= \value -> return (StringValue value))
                 <|> readExpression
                 <|> try applyFunc
                 <|> try (identifier >>= \varName -> return (Var varName))
@@ -215,9 +229,7 @@ arithmeticRelation = do
 stringRelation :: Parser BoolExp
 stringRelation = do
                 first <- stringExpression
-                whiteSpace  
                 operator <- relationalBinaryOperator
-                whiteSpace  
                 second <- stringExpression
                 return (RelationalBinaryString operator first second)
 
