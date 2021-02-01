@@ -10,7 +10,7 @@ lexer :: Token.TokenParser ()
 lexer = Token.makeTokenParser style
     where
         operations = ["+", "*", "-", "\\", "%", "**", "&&", "||", "!", "++", "=", "==", "!=", "<", "<=", ">", ">=", "\""]
-        reservedNames = ["func", "if", "else", "while", "true", "false"]
+        reservedNames = ["func", "if", "else", "while", "true", "false", "print", "read"]
         style = emptyDef {
             Token.commentLine = "#",
             Token.reservedOpNames = operations,
@@ -67,7 +67,9 @@ character = fmap return nonEscapedCharacter
 
 string :: Parser String
 string = do
+    whiteSpace
     Text.Parsec.Prim.char '"'
     strings <- Text.Parsec.Prim.many character
     Text.Parsec.Prim.char '"'
+    whiteSpace
     return (concat strings)

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8dbc0eac4a96e9139d82a898ccfc212f096c8a010a0c235e3f29d39f23fc708d
+-- hash: d04843e14d978202c7db2b5a8abe47b3e5ca0499abf444591ea272c0b6f85241
 
 name:           AEIL-transpiler
 version:        0.1.0.0
@@ -31,6 +31,7 @@ library
       Lexer
       Lib
       Parser
+      Transpiller
   other-modules:
       Paths_AEIL_transpiler
   hs-source-dirs:
