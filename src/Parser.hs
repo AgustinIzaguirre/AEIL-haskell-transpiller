@@ -178,13 +178,12 @@ arithmeticExpression :: Parser ArithmeticExp
 arithmeticExpression = Expr.buildExpressionParser arithmeticOperators number
 
 number :: Parser ArithmeticExp 
-number = try (parenthesis arithmeticExpression)
-        <|> fmap Number integer
+number = try (fmap Number integer)
+        <|> parenthesis arithmeticExpression
         -- TODO with variables and constructor <|> fmap Name identifier
 
 valueExpression :: Parser ValueExp 
-valueExpression = parenthesis valueExpression
-                <|> (booleanExpression >>= \value -> return (BoolValue value))
+valueExpression = (booleanExpression >>= \value -> return (BoolValue value))
                 <|> (arithmeticExpression >>= \value -> return (NumberValue value))
                 <|> readExpression
                 <|> try applyFunc
