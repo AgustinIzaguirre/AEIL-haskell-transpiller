@@ -1,0 +1,9 @@
+func main() {
+    a = "a ver si es menor"<
+        "que este texto";
+    b =  "a ver si es menor" =="que este texto";
+    c =    "a ver si es menor" !=   "que este texto";
+    if ("a ver si es menor" >= "que este texto") {
+        ;
+    }
+}

@@ -17,16 +17,16 @@ import Lexer
       reservedOperators,
       whiteSpace )
 import AST
-    (Program(Root, Multiple), Function(Func),  Name, StringExp(StringConstant),  RelationalBinaryOperator(GreaterOrEqual, Greater, LessOrEqual, Less, NotEquals, Equals),  Statement(While, PrintFunc, IfElse, Assign, Return, FuncCall), Block(Empty, Actions, SingleAction), ValueExp(Read, Var, Apply, NumberValue, BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
+    (Program(Root, Multiple), Function(Func),  Name, StringExp(StringConstant),  RelationalBinaryOperator(GreaterOrEqual, Greater, LessOrEqual, Less, NotEquals, Equals),  Statement(While, PrintFunc, IfElse, Assign, Return, FuncCall), Block(Empty, Actions, SingleAction), ValueExp(Read, Var, Apply, NumberValue, BoolValue),  Statement(If),  ArithmeticBinaryOperator(Power, Modulo, Minus, Add, Multiply, Divide),
       ArithmeticExp(Number, ArithmeticBinaryOperation, Negate),
       BoolBinaryOperators(Or, And),
-      BoolExp(FalseValue, TrueValue, BoolBinaryOperations, Not, RelationalBinaryArithmetic),
+      BoolExp(RelationalBinaryString, FalseValue, TrueValue, BoolBinaryOperations, Not, RelationalBinaryArithmetic),
       Program )
 
 arithmeticOperators :: [[Expr.Operator String () Data.Functor.Identity.Identity ArithmeticExp]]
 arithmeticOperators =
             [
-                -- TODO add pow here maybe
+                [ Expr.Infix (reservedOperators "**" >> return (ArithmeticBinaryOperation Power )) Expr.AssocRight ],
                 [ Expr.Prefix (reservedOperators "-" >> return Negate) ],
                 [ Expr.Infix (reservedOperators "*" >> return (ArithmeticBinaryOperation Multiply )) Expr.AssocLeft,
                   Expr.Infix (reservedOperators "/" >> return (ArithmeticBinaryOperation Divide )) Expr.AssocLeft,
@@ -156,7 +156,7 @@ arguments = commaSeparated valueExpression
 
 stringExpression :: Parser StringExp
 stringExpression = string >>= \text -> return (StringConstant text)
-                    -- <|> stringOperation  
+                    -- <|> stringOperation  TODO add concat
 
 booleanExpression :: Parser BoolExp
 booleanExpression = Expr.buildExpressionParser booleanOperators boolean
@@ -178,7 +178,7 @@ arithmeticExpression :: Parser ArithmeticExp
 arithmeticExpression = Expr.buildExpressionParser arithmeticOperators number
 
 number :: Parser ArithmeticExp 
-number = parenthesis arithmeticExpression
+number = try (parenthesis arithmeticExpression)
         <|> fmap Number integer
         -- TODO with variables and constructor <|> fmap Name identifier
 
@@ -204,7 +204,7 @@ readExpression = do
 
 realtionalExpression :: Parser BoolExp
 realtionalExpression = arithmeticRelation
-                    -- TODO <|> stringRelation
+                    <|> stringRelation
 
 arithmeticRelation :: Parser BoolExp
 arithmeticRelation = do
@@ -212,6 +212,15 @@ arithmeticRelation = do
                 operator <- relationalBinaryOperator
                 second <- arithmeticExpression
                 return (RelationalBinaryArithmetic operator first second)
+
+stringRelation :: Parser BoolExp
+stringRelation = do
+                first <- stringExpression
+                whiteSpace  
+                operator <- relationalBinaryOperator
+                whiteSpace  
+                second <- stringExpression
+                return (RelationalBinaryString operator first second)
 
 relationalBinaryOperator :: Parser RelationalBinaryOperator
 relationalBinaryOperator = (reservedOperators "==" >> return Equals)
