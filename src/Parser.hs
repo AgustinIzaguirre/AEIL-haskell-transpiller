@@ -1,6 +1,6 @@
 module Parser where
 
-import Text.Parsec (char, try, (<|>))
+import Text.Parsec (getInput, char, try, (<|>))
 import Text.Parsec.String (Parser)
 import Text.Parsec.Prim (many)
 import qualified Text.Parsec.Expr as Expr
@@ -17,7 +17,7 @@ import Lexer
       reservedOperators,
       whiteSpace )
 import AST
-    (Program(Root, Multiple), Function(Func),  Name, StringExp(StringConstant),  RelationalBinaryOperator(GreaterOrEqual, Greater, LessOrEqual, Less, NotEquals, Equals),  Statement(While, PrintFunc, IfElse, Assign, Return, FuncCall), Block(Empty, Actions, SingleAction), ValueExp(Var, Apply, NumberValue, BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
+    (Program(Root, Multiple), Function(Func),  Name, StringExp(StringConstant),  RelationalBinaryOperator(GreaterOrEqual, Greater, LessOrEqual, Less, NotEquals, Equals),  Statement(While, PrintFunc, IfElse, Assign, Return, FuncCall), Block(Empty, Actions, SingleAction), ValueExp(Read, Var, Apply, NumberValue, BoolValue),  Statement(If),  ArithmeticBinaryOperator(Modulo, Minus, Add, Multiply, Divide),
       ArithmeticExp(Number, ArithmeticBinaryOperation, Negate),
       BoolBinaryOperators(Or, And),
       BoolExp(FalseValue, TrueValue, BoolBinaryOperations, Not, RelationalBinaryArithmetic),
@@ -45,7 +45,7 @@ booleanOperators =
 
 -- TODO check that after parsing everything there is nothing left or spaces or comments
 parseFile :: Parser Program
-parseFile = whiteSpace >> program
+parseFile = whiteSpace >> program 
 
 program :: Parser Program 
 program = try multipleFunctionsProgram
@@ -186,6 +186,7 @@ valueExpression :: Parser ValueExp
 valueExpression = parenthesis valueExpression
                 <|> (booleanExpression >>= \value -> return (BoolValue value))
                 <|> (arithmeticExpression >>= \value -> return (NumberValue value))
+                <|> readExpression
                 <|> try applyFunc
                 <|> try (identifier >>= \varName -> return (Var varName))
 
@@ -194,6 +195,12 @@ applyFunc = do
     funcName <- identifier
     funcArguments <- parenthesis arguments
     return (Apply funcName funcArguments)
+
+readExpression :: Parser ValueExp
+readExpression = do
+        reserved "read"
+        promptText <- parenthesis stringExpression
+        return (Read promptText)
 
 realtionalExpression :: Parser BoolExp
 realtionalExpression = arithmeticRelation

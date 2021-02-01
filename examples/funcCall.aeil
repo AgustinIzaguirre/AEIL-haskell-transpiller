@@ -6,4 +6,6 @@ func main() {
 
 func testFunc(a,b,c) {
     print("Calling testFunc");
+    a = read("Testing read");
+    otherFunc(read("var1"), a, testFunc(), testFunc(a, true));
 }

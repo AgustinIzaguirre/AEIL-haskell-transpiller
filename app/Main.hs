@@ -17,6 +17,6 @@ main = do
 
 compile :: String -> IO Program
 compile code = do 
-    case parse parseFile  "" code of
+    case parse (parseFile <* eof)  "" code of
         Left error  -> print error >> fail "parse error"
         Right result -> return result
