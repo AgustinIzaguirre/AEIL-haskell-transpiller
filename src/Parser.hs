@@ -17,14 +17,14 @@ import Lexer
       reservedOperators,
       whiteSpace )
 import AST
-    (StringOperators(Concat), Program(Root, Multiple), Function(Func),  Name, StringExp(StringBinaryOperation, StringConstant),
+    (StringOperators(Concat), Program(Root, Multiple), Function(Func),  Name, StringExp(StringVar, StringBinaryOperation, StringConstant),
       RelationalBinaryOperator(GreaterOrEqual, Greater, LessOrEqual, Less, NotEquals, Equals),
       Statement(While, PrintFunc, IfElse, Assign, Return, FuncCall), Block(Empty, Actions, SingleAction),
       ValueExp(StringValue, Read, Var, Apply, NumberValue, BoolValue),  Statement(If),
         ArithmeticBinaryOperator(Power, Modulo, Minus, Add, Multiply, Divide),
-      ArithmeticExp(Number, ArithmeticBinaryOperation, Negate),
+      ArithmeticExp(NumericVar, Number, ArithmeticBinaryOperation, Negate),
       BoolBinaryOperators(Or, And),
-      BoolExp(RelationalBinaryString, FalseValue, TrueValue, BoolBinaryOperations, Not, RelationalBinaryArithmetic),
+      BoolExp(BoolVar, RelationalBinaryString, FalseValue, TrueValue, BoolBinaryOperations, Not, RelationalBinaryArithmetic),
       Program )
 
 arithmeticOperators :: [[Expr.Operator String () Data.Functor.Identity.Identity ArithmeticExp]]
@@ -170,6 +170,7 @@ stringExpression = Expr.buildExpressionParser stringOperators stringValue
 stringValue :: Parser StringExp
 stringValue = parenthesis stringExpression
             <|> try (string >>= \text -> return (StringConstant text))
+            -- <|> try (identifier >>= \varName -> return (StringVar varName))
 
 booleanExpression :: Parser BoolExp
 booleanExpression = Expr.buildExpressionParser booleanOperators boolean
@@ -179,6 +180,7 @@ boolean = try (parenthesis booleanExpression)
             <|> try (reserved "true" >> return TrueValue)
             <|> try (reserved "false" >> return FalseValue)
             <|> try realtionalExpression
+            -- <|> (identifier >>= \varName -> return (BoolVar varName))
 
 returnStatement :: Parser Statement
 returnStatement = do
@@ -193,7 +195,7 @@ arithmeticExpression = Expr.buildExpressionParser arithmeticOperators number
 number :: Parser ArithmeticExp 
 number = try (fmap Number integer)
         <|> try (parenthesis arithmeticExpression)
-        -- TODO with variables and constructor <|> fmap Name identifier
+        -- <|> try (identifier >>= \varName -> return (NumericVar varName))
 
 valueExpression :: Parser ValueExp 
 valueExpression = (booleanExpression >>= \value -> return (BoolValue value))

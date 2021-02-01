@@ -54,7 +54,7 @@ data BoolBinaryOperators = And
                         deriving(Show)
 
 data ArithmeticExp = Number Integer
-               | NumVar Name
+               | NumericVar Name
                | Negate ArithmeticExp
                | ArithmeticBinaryOperation ArithmeticBinaryOperator ArithmeticExp ArithmeticExp
                deriving(Show)
