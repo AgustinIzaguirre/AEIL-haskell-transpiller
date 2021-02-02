@@ -18,3 +18,7 @@ func third(a, b, c) {
 func fourth() {
     print("Parses all functions");
 }
+
+func main() {
+    ;
+}
