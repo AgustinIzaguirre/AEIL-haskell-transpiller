@@ -166,24 +166,15 @@ arguments :: Parser [ValueExp]
 arguments = commaSeparated valueExpression
 
 stringExpression :: Parser StringExp
-stringExpression = Expr.buildExpressionParser stringOperators stringPossibleValues
-                    -- <|> Expr.buildExpressionParser stringOperators (identifier >>= \name -> return (StringVar name))
-
-stringPossibleValues :: Parser StringExp
-stringPossibleValues = stringValue -- try (identifier >>= \name -> return (StringVar name))
-                        -- <|> stringValue
+stringExpression = Expr.buildExpressionParser stringOperators stringValue
 
 stringValue :: Parser StringExp
-stringValue = parenthesis stringExpression
-            <|> (string >>= \text -> return (StringConstant text))
-            -- <|> try (identifier >>= \varName -> return (StringVar varName))
+stringValue = try (parenthesis stringExpression)
+            <|> try (string >>= \text -> return (StringConstant text))
+            <|> (identifier >>= \varName -> return (StringVar varName))
 
 booleanExpression :: Parser BoolExp
-booleanExpression = Expr.buildExpressionParser booleanOperators booleanPossibleValues
-                    -- <|> Expr.buildExpressionParser booleanOperators (identifier >>= \name -> return (BoolVar name))
-
-booleanPossibleValues :: Parser BoolExp
-booleanPossibleValues = boolean
+booleanExpression = Expr.buildExpressionParser booleanOperators boolean
 
 boolean :: Parser BoolExp 
 boolean = try realtionalExpression
