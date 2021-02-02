@@ -26,6 +26,7 @@ import AST
       BoolBinaryOperators(Or, And),
       BoolExp(BoolVar, RelationalBinaryString, FalseValue, TrueValue, BoolBinaryOperations, Not, RelationalBinaryArithmetic),
       Program )
+import Debug.Trace
 
 arithmeticOperators :: [[Expr.Operator String () Data.Functor.Identity.Identity ArithmeticExp]]
 arithmeticOperators =
@@ -109,11 +110,11 @@ multipleStatementBlock = do
 
 statement :: Parser Statement 
 statement = try assignStatement
-            <|> try returnStatement
-            <|> try ifElseStatement
-            <|> try ifStatement
-            <|> try whileStatement
-            <|> try printFuncStatement
+            <|> trace "return statement"try returnStatement
+            <|> trace "ifelse statement" try ifElseStatement
+            <|> trace "if statement" try ifStatement
+            <|> trace "while statement" try whileStatement
+            <|> trace "while print func" try printFuncStatement
             <|> try funcCallStatement
 
 assignStatement :: Parser Statement
@@ -130,6 +131,7 @@ ifStatement = do
     condition <- parenthesis booleanExpression
     ifBlock <- braces block
     return (If condition ifBlock)
+
 
 ifElseStatement :: Parser Statement
 ifElseStatement = do
@@ -165,7 +167,12 @@ arguments :: Parser [ValueExp]
 arguments = commaSeparated valueExpression
 
 stringExpression :: Parser StringExp
-stringExpression = Expr.buildExpressionParser stringOperators stringValue
+stringExpression = Expr.buildExpressionParser stringOperators stringPossibleValues
+                    -- <|> Expr.buildExpressionParser stringOperators (identifier >>= \name -> return (StringVar name))
+
+stringPossibleValues :: Parser StringExp
+stringPossibleValues = stringValue -- try (identifier >>= \name -> return (StringVar name))
+                        -- <|> stringValue
 
 stringValue :: Parser StringExp
 stringValue = parenthesis stringExpression
@@ -173,13 +180,18 @@ stringValue = parenthesis stringExpression
             -- <|> try (identifier >>= \varName -> return (StringVar varName))
 
 booleanExpression :: Parser BoolExp
-booleanExpression = Expr.buildExpressionParser booleanOperators boolean
+booleanExpression = Expr.buildExpressionParser booleanOperators booleanPossibleValues
+                    -- <|> Expr.buildExpressionParser booleanOperators (identifier >>= \name -> return (BoolVar name))
+
+booleanPossibleValues :: Parser BoolExp
+booleanPossibleValues = boolean --trace "variable" try (identifier >>= \name -> return (BoolVar name))
+                        -- <|> trace "boolean" try boolean
 
 boolean :: Parser BoolExp 
-boolean = try (parenthesis booleanExpression)
-            <|> try (reserved "true" >> return TrueValue)
-            <|> try (reserved "false" >> return FalseValue)
-            <|> try realtionalExpression
+boolean = trace "relational expression" try realtionalExpression
+            <|> trace "true value" try (reserved "true" >> return TrueValue)
+            <|> trace "false value" try (reserved "false" >> return FalseValue)
+            <|> trace "boolean expression" try (parenthesis booleanExpression)
             -- <|> (identifier >>= \varName -> return (BoolVar varName))
 
 returnStatement :: Parser Statement
@@ -190,7 +202,11 @@ returnStatement = do
     return (Return value)
 
 arithmeticExpression :: Parser ArithmeticExp 
-arithmeticExpression = Expr.buildExpressionParser arithmeticOperators number
+arithmeticExpression = Expr.buildExpressionParser arithmeticOperators numericPossibleValues
+
+numericPossibleValues :: Parser ArithmeticExp
+numericPossibleValues = try (identifier >>= \name -> return (NumericVar name))
+                        <|> try number
 
 number :: Parser ArithmeticExp 
 number = try (fmap Number integer)
