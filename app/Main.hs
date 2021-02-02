@@ -20,4 +20,6 @@ compile :: String -> IO ()
 compile code = do 
     case parse (parseFile <* eof)  "" code of
         Left error  -> print error >> fail "parse error"
-        Right result -> print $ show (transpileProgram result)
+        Right result -> case transpileProgram result of
+                        Nothing -> fail "Transpile error"
+                        Just code -> writeFile "output.py" code >> print code
