@@ -54,7 +54,6 @@ stringOperators =
         [ Expr.Infix (reservedOperators "++" >> return (StringBinaryOperation Concat )) Expr.AssocLeft ]
     ]
 
--- TODO check that after parsing everything there is nothing left or spaces or comments
 parseFile :: Parser Program
 parseFile = whiteSpace >> program 
 
@@ -109,13 +108,13 @@ multipleStatementBlock = do
                     return (Actions action nextActions)
 
 statement :: Parser Statement 
-statement = try assignStatement
-            <|> trace "return statement"try returnStatement
-            <|> trace "ifelse statement" try ifElseStatement
-            <|> trace "if statement" try ifStatement
-            <|> trace "while statement" try whileStatement
-            <|> trace "while print func" try printFuncStatement
-            <|> try funcCallStatement
+statement = try funcCallStatement
+            <|> try assignStatement
+            <|> try returnStatement
+            <|> try ifElseStatement
+            <|> try ifStatement
+            <|> try whileStatement
+            <|> try printFuncStatement
 
 assignStatement :: Parser Statement
 assignStatement = do
@@ -176,7 +175,7 @@ stringPossibleValues = stringValue -- try (identifier >>= \name -> return (Strin
 
 stringValue :: Parser StringExp
 stringValue = parenthesis stringExpression
-            <|> try (string >>= \text -> return (StringConstant text))
+            <|> (string >>= \text -> return (StringConstant text))
             -- <|> try (identifier >>= \varName -> return (StringVar varName))
 
 booleanExpression :: Parser BoolExp
@@ -184,15 +183,14 @@ booleanExpression = Expr.buildExpressionParser booleanOperators booleanPossibleV
                     -- <|> Expr.buildExpressionParser booleanOperators (identifier >>= \name -> return (BoolVar name))
 
 booleanPossibleValues :: Parser BoolExp
-booleanPossibleValues = boolean --trace "variable" try (identifier >>= \name -> return (BoolVar name))
-                        -- <|> trace "boolean" try boolean
+booleanPossibleValues = boolean
 
 boolean :: Parser BoolExp 
-boolean = trace "relational expression" try realtionalExpression
-            <|> trace "true value" try (reserved "true" >> return TrueValue)
-            <|> trace "false value" try (reserved "false" >> return FalseValue)
-            <|> trace "boolean expression" try (parenthesis booleanExpression)
-            -- <|> (identifier >>= \varName -> return (BoolVar varName))
+boolean = try realtionalExpression
+            <|> try (parenthesis booleanExpression)
+            <|> try (reserved "true" >> return TrueValue)
+            <|> try (reserved "false" >> return FalseValue)
+            <|> (identifier >>= \varName -> return (BoolVar varName))
 
 returnStatement :: Parser Statement
 returnStatement = do
@@ -206,7 +204,7 @@ arithmeticExpression = Expr.buildExpressionParser arithmeticOperators numericPos
 
 numericPossibleValues :: Parser ArithmeticExp
 numericPossibleValues = try (identifier >>= \name -> return (NumericVar name))
-                        <|> try number
+                        <|> number
 
 number :: Parser ArithmeticExp 
 number = try (fmap Number integer)
@@ -214,12 +212,12 @@ number = try (fmap Number integer)
         -- <|> try (identifier >>= \varName -> return (NumericVar varName))
 
 valueExpression :: Parser ValueExp 
-valueExpression = (booleanExpression >>= \value -> return (BoolValue value))
-                <|> (arithmeticExpression >>= \value -> return (NumberValue value))
-                <|> (stringExpression >>= \value -> return (StringValue value))
-                <|> readExpression
-                <|> try applyFunc
+valueExpression =  try applyFunc
+                <|> try (arithmeticExpression >>= \value -> return (NumberValue value))
+                <|> try (booleanExpression >>= \value -> return (BoolValue value))
+                <|> try (stringExpression >>= \value -> return (StringValue value))
                 <|> try (identifier >>= \varName -> return (Var varName))
+                <|> readExpression
 
 applyFunc :: Parser ValueExp
 applyFunc = do
@@ -234,8 +232,8 @@ readExpression = do
         return (Read promptText)
 
 realtionalExpression :: Parser BoolExp
-realtionalExpression = arithmeticRelation
-                    <|> stringRelation
+realtionalExpression = try arithmeticRelation
+                    <|> try stringRelation
 
 arithmeticRelation :: Parser BoolExp
 arithmeticRelation = do
