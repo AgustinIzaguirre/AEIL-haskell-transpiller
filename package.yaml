@@ -24,6 +24,7 @@ dependencies:
 - parsec
 - mtl
 - haskeline
+- HUnit
 
 library:
   source-dirs: src

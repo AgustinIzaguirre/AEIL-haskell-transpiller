@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d04843e14d978202c7db2b5a8abe47b3e5ca0499abf444591ea272c0b6f85241
+-- hash: f3e6201bc2870d6c51229c05d42cf27456f2157373fa6a5d27c92b9af660d937
 
 name:           AEIL-transpiler
 version:        0.1.0.0
@@ -37,7 +37,8 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      HUnit
+    , base >=4.7 && <5
     , haskeline
     , mtl
     , parsec
@@ -52,6 +53,7 @@ executable AEIL-transpiler-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       AEIL-transpiler
+    , HUnit
     , base >=4.7 && <5
     , haskeline
     , mtl
@@ -68,6 +70,7 @@ test-suite AEIL-transpiler-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       AEIL-transpiler
+    , HUnit
     , base >=4.7 && <5
     , haskeline
     , mtl

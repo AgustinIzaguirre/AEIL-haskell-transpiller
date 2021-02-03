@@ -17,14 +17,14 @@ import Lexer
       reservedOperators,
       whiteSpace )
 import AST
-    (StringOperators(Concat), Program(Root, Multiple), Function(Func),  Name, StringExp(StringVar, StringBinaryOperation, StringConstant),
+    (StringOperators(Concat), Program(Root, Multiple), Function(Func),  Name, StringExp(StringFunc, StringVar, StringBinaryOperation, StringConstant),
       RelationalBinaryOperator(GreaterOrEqual, Greater, LessOrEqual, Less, NotEquals, Equals),
       Statement(While, PrintFunc, IfElse, Assign, Return, FuncCall), Block(Empty, Actions, SingleAction),
       ValueExp(StringValue, Read, Var, Apply, NumberValue, BoolValue),  Statement(If),
         ArithmeticBinaryOperator(Power, Modulo, Minus, Add, Multiply, Divide),
-      ArithmeticExp(NumericVar, Number, ArithmeticBinaryOperation, Negate),
+      ArithmeticExp(NumericFunc, NumericVar, Number, ArithmeticBinaryOperation, Negate),
       BoolBinaryOperators(Or, And),
-      BoolExp(BoolVar, RelationalBinaryString, FalseValue, TrueValue, BoolBinaryOperations, Not, RelationalBinaryArithmetic),
+      BoolExp(BoolFunc, BoolVar, RelationalBinaryString, FalseValue, TrueValue, BoolBinaryOperations, Not, RelationalBinaryArithmetic),
       Program )
 import Debug.Trace
 
@@ -121,7 +121,7 @@ assignStatement = do
     name <- identifier
     reservedOperators "="
     value <- valueExpression
-    semiColon
+    trace ("identifier = " ++ name ++ " value = " ++ show value) semiColon
     return (Assign name value)
 
 ifStatement :: Parser Statement
@@ -166,21 +166,27 @@ arguments :: Parser [ValueExp]
 arguments = commaSeparated valueExpression
 
 stringExpression :: Parser StringExp
-stringExpression = Expr.buildExpressionParser stringOperators stringValue
+stringExpression = try (Expr.buildExpressionParser stringOperators stringPossibleValues)
+
+stringPossibleValues :: Parser StringExp
+stringPossibleValues = try applyStringFunc
+                        <|> try (identifier >>= \name -> return (StringVar name))
+                        <|> try stringValue
 
 stringValue :: Parser StringExp
 stringValue = try (parenthesis stringExpression)
             <|> try (string >>= \text -> return (StringConstant text))
-            <|> (identifier >>= \varName -> return (StringVar varName))
+            -- <|> (identifier >>= \varName -> return (StringVar varName))
 
 booleanExpression :: Parser BoolExp
 booleanExpression = Expr.buildExpressionParser booleanOperators boolean
 
-boolean :: Parser BoolExp 
+boolean :: Parser BoolExp
 boolean = try realtionalExpression
             <|> try (parenthesis booleanExpression)
             <|> try (reserved "true" >> return TrueValue)
             <|> try (reserved "false" >> return FalseValue)
+            <|> try applyBoolFunc
             <|> (identifier >>= \varName -> return (BoolVar varName))
 
 returnStatement :: Parser Statement
@@ -194,8 +200,9 @@ arithmeticExpression :: Parser ArithmeticExp
 arithmeticExpression = Expr.buildExpressionParser arithmeticOperators numericPossibleValues
 
 numericPossibleValues :: Parser ArithmeticExp
-numericPossibleValues = try (identifier >>= \name -> return (NumericVar name))
-                        <|> number
+numericPossibleValues = try applyNumericFunc
+                        <|> try (identifier >>= \name -> return (NumericVar name))
+                        <|> try number
 
 number :: Parser ArithmeticExp 
 number = try (fmap Number integer)
@@ -215,6 +222,24 @@ applyFunc = do
     funcName <- identifier
     funcArguments <- parenthesis arguments
     return (Apply funcName funcArguments)
+
+applyBoolFunc :: Parser BoolExp 
+applyBoolFunc = do
+    funcName <- identifier
+    funcArguments <- parenthesis arguments
+    return (BoolFunc funcName funcArguments)
+
+applyNumericFunc :: Parser ArithmeticExp
+applyNumericFunc = do
+    funcName <- identifier
+    funcArguments <- parenthesis arguments
+    return (NumericFunc funcName funcArguments)
+
+applyStringFunc :: Parser StringExp
+applyStringFunc = do
+    funcName <- identifier
+    funcArguments <- parenthesis arguments
+    return (StringFunc funcName funcArguments)
 
 readExpression :: Parser ValueExp
 readExpression = do
