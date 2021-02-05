@@ -7,9 +7,13 @@ module Lib
         isValidFuncCall,
         getProgramFunctions,
         getFunctionData,
-        getFunctionBlock
+        getFunctionBlock,
+        hasProgramError,
+        getProgramErrors
     ) where
 
+import Data.Foldable
+import Data.List
 import AST
 type FunctionData = (String,([String], Function))
 
@@ -48,3 +52,15 @@ getFunctionData (Func name parameters block) = (name, (parameters, Func name par
 
 getFunctionBlock :: Function -> Block
 getFunctionBlock (Func _ _ block) = block
+
+hasError :: Either String String -> Bool
+hasError (Left _) = True
+hasError _ = False
+
+hasProgramError :: [Either String String] -> Bool
+hasProgramError functions = or (fmap hasError functions)
+
+getProgramErrors :: [Either String String] -> String 
+getProgramErrors functions
+    | hasProgramError functions = intercalate "  " $ fmap (either id id) (filter hasError functions)
+    | otherwise = ""
