@@ -1,24 +1,27 @@
 module Transpiller where
 
 import AST
+import Lib
+import Data.List
 
 -- Probabbly make a function that returns [(FuncName, ([Parameters, FuncAST))] from Program
 -- hasMain $ map fst pairTest where pairTest is the array of [(FuncName, ([Parameters, FuncAST))]
 -- parameters to check if quantity matches on every call, funcName to check for main and to check function exists
 
-hasMain :: [String] -> Bool
-hasMain funcNames = (== 1) . length $ filter (== "main") funcNames
+-- TODO replace Maybe with Either
+transpileProgram :: Program -> Maybe String
+transpileProgram program 
+                | hasMainFunction programFunctions = Just (concat (fmap transpileFunction programFunctions) ++ "\nmain()")
+                | otherwise = Nothing
+                where programFunctions = getProgramFunctions program
 
--- getFunction :: [(String, (Int, Function))] -> Name -> Maybe (String, (Int, Function))
-getFunction :: [(String, (Int, String))] -> String -> Maybe (String, (Int, String))
-getFunction functions functionName
-    | length functionInfo == 1 = Just (head functionInfo)
-    | otherwise = Nothing -- Not declared or redeclared
-    where functionInfo = filter ((== functionName) . fst) functions
+transpileFunction :: FunctionData -> String
+transpileFunction funcData = "def " ++ fst funcData ++ "(" ++ 
+                                transpileFuncParameters ((fst . snd) funcData) ++ "):\n" ++ 
+                                transpileBlock ((getFunctionBlock . snd . snd) funcData) 1 ++ "\n"
 
--- isValidFuncCall :: (String, (Int, Function)) -> [(String, (Int, Function))] -> Bool
-isValidFuncCall :: (String, (Int, String)) -> [(String, (Int, String))] -> Bool
-isValidFuncCall call functions = case function of
-                            Nothing -> False
-                            Just f -> (fst . snd) call == (fst . snd) f 
-                        where function = getFunction functions (fst call)
+transpileBlock :: Block -> Int -> String 
+transpileBlock block level = identForLevel 1 ++ "pass\n"
+
+transpileFuncParameters :: [String] -> String
+transpileFuncParameters = intercalate ", " 
