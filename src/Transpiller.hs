@@ -20,19 +20,23 @@ transpileProgram program
 getFunctionsResult :: [FunctionData] -> Either String String
 getFunctionsResult functions
     | hasProgramError functionResult = Left (getProgramErrors functionResult) 
-    | otherwise = Right (concatMap (either id id) functionResult ++ "\nmain()")
+    | otherwise = Right (concatMap unwrap functionResult ++ "\nmain()")
     where functionResult = fmap transpileFunction functions
 
 transpileFunction :: FunctionData -> Either String String
-transpileFunction funcData = Right 
-                                (
-                                    "def " ++ fst funcData ++ "(" ++ 
-                                    transpileFuncParameters ((fst . snd) funcData) ++ "):\n" ++ 
-                                    transpileBlock ((getFunctionBlock . snd . snd) funcData) 1 ++ "\n"
-                                )
-
-transpileBlock :: Block -> Int -> String 
-transpileBlock block level = identForLevel 1 ++ "pass\n"
+transpileFunction funcData
+    | hasError blockResult = Left (either id id blockResult)
+    | otherwise = Right 
+                    (
+                        "def " ++ fst funcData ++ "(" ++ 
+                        transpileFuncParameters ((fst . snd) funcData) ++ "):\n" ++ 
+                        unwrap blockResult ++ "\n"
+                    )
+    where blockResult = transpileBlock ((getFunctionBlock . snd . snd) funcData) 1
 
 transpileFuncParameters :: [String] -> String
 transpileFuncParameters = intercalate ", " 
+
+transpileBlock :: Block -> Int -> Either String String
+transpileBlock block level = Right (identForLevel 1 ++ "pass\n")
+

@@ -9,7 +9,9 @@ module Lib
         getFunctionData,
         getFunctionBlock,
         hasProgramError,
-        getProgramErrors
+        getProgramErrors,
+        hasError,
+        unwrap
     ) where
 
 import Data.Foldable
@@ -64,3 +66,6 @@ getProgramErrors :: [Either String String] -> String
 getProgramErrors functions
     | hasProgramError functions = intercalate "  " $ fmap (either id id) (filter hasError functions)
     | otherwise = ""
+
+unwrap :: Either String String -> String
+unwrap = either id id

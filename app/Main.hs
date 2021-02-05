@@ -21,5 +21,5 @@ compile code = do
     case parse (parseFile <* eof)  "" code of
         Left error  -> print error >> fail "parse error"
         Right result -> case transpileProgram result of
-                        Left error -> fail "Transpile error"
+                        Left error -> fail error
                         Right code -> writeFile "output.py" code >> print code
