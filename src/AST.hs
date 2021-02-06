@@ -69,7 +69,6 @@ data ArithmeticBinaryOperator = Add
                                 | Power
                                 deriving(Show)
 
-
 data StringExp = StringConstant String
                 | StringVar Name
                 | StringFunc Name [ValueExp]

@@ -86,7 +86,7 @@ transpileWhileStatement condition block level
 transpilePrintStatement :: StringExp -> Int -> Either String String
 transpilePrintStatement text level = errorOr (transpileStringExp text) (identForLevel level ++ "print(") ")\n"
 
--- TODO implement
+-- TODO implement using funcCallValue
 transpileFuncCallStatement :: String -> [ValueExp] -> Int -> Either String String 
 transpileFuncCallStatement name args level = Right (identForLevel level ++ "# Not implemented\n")
 
@@ -94,6 +94,21 @@ transpileFuncCallStatement name args level = Right (identForLevel level ++ "# No
 transpileBoolExp :: BoolExp -> Either String String 
 transpileBoolExp boolExp = Right "True"
 
--- TODO implement
 transpileStringExp :: StringExp -> Either String String 
-transpileStringExp stringExp = Right "\"# Not implemented\""
+transpileStringExp (StringConstant text) = Right ("\"" ++ text ++ "\"")
+transpileStringExp (StringVar var) = Right var
+transpileStringExp (StringFunc func args) = errorOrValue (transpileFuncCallValue func args)
+transpileStringExp (StringBinaryOperation operator string1 string2) = errorOrValue (transpileStringOperation operator string1 string2)
+
+-- TODO implement
+transpileFuncCallValue :: String -> [ValueExp] -> Either String String
+transpileFuncCallValue name args = Right (name ++ "()")
+
+transpileStringOperation :: StringOperators -> StringExp  -> StringExp -> Either String String
+transpileStringOperation (Concat) string1 string2 = errorOrValue (transpileStringConcatenation string1 string2)
+
+transpileStringConcatenation :: StringExp -> StringExp -> Either String String
+transpileStringConcatenation string1 string2
+    | hasError string2Result = errorOrValue string2Result
+    | otherwise = errorOrAppend (transpileStringExp string1) (unwrap string2Result)
+    where string2Result = transpileStringExp string2

@@ -15,6 +15,7 @@ module Lib
         errorOrValue,
         errorOr,
         errorOrPrepend,
+        errorOrAppend,
         getBlockStatements
     ) where
 
