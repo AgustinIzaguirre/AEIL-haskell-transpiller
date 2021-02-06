@@ -53,6 +53,7 @@ transpileStatement (FuncCall name args) level = errorOrValue (transpileFuncCallS
 transpileAssignStatement :: String -> ValueExp -> Int -> Either String String
 transpileAssignStatement name value level =  Right (identForLevel level ++ "# Not implemented\n")
 
+-- TODO implement
 transpileReturnStatement :: ValueExp -> Int -> Either String String
 transpileReturnStatement value level =  Right (identForLevel level ++ "return 0\n") -- TODO transpile valueExp
 
