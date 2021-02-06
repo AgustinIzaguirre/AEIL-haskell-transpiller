@@ -7,9 +7,19 @@ module Lib
         isValidFuncCall,
         getProgramFunctions,
         getFunctionData,
-        getFunctionBlock
+        getFunctionBlock,
+        hasProgramError,
+        getProgramErrors,
+        hasError,
+        unwrap,
+        errorOrValue,
+        errorOr,
+        errorOrPrepend,
+        getBlockStatements
     ) where
 
+import Data.Foldable
+import Data.List
 import AST
 type FunctionData = (String,([String], Function))
 
@@ -48,3 +58,36 @@ getFunctionData (Func name parameters block) = (name, (parameters, Func name par
 
 getFunctionBlock :: Function -> Block
 getFunctionBlock (Func _ _ block) = block
+
+hasError :: Either String String -> Bool
+hasError (Left _) = True
+hasError _ = False
+
+hasProgramError :: [Either String String] -> Bool
+hasProgramError results = or (fmap hasError results)
+
+getProgramErrors :: [Either String String] -> String 
+getProgramErrors results
+    | hasProgramError results = intercalate "  " $ fmap (either id id) (filter hasError results)
+    | otherwise = ""
+
+unwrap :: Either String String -> String
+unwrap = either id id
+
+getBlockStatements :: Block -> [Statement]
+getBlockStatements Empty = []
+getBlockStatements (SingleAction statement) = [statement]
+getBlockStatements (Actions statement block) = statement : getBlockStatements block
+
+errorOr :: Either String String -> String -> String -> Either String String
+errorOr (Left errorMessage) prev post = Left errorMessage
+errorOr (Right code) prev post = Right (prev ++ code ++ post)
+
+errorOrPrepend :: Either String String -> String -> Either String String
+errorOrPrepend result prev = errorOr result prev ""
+
+errorOrAppend :: Either String String -> String -> Either String String
+errorOrAppend result post = errorOr result "" post
+
+errorOrValue :: Either String String -> Either String String
+errorOrValue result = errorOr result "" ""
