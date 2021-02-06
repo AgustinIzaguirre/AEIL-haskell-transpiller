@@ -56,9 +56,8 @@ transpileStatement (FuncCall name args) level = errorOrValue (transpileFuncCallS
 transpileAssignStatement :: String -> ValueExp -> Int -> Either String String
 transpileAssignStatement name value level = errorOr (transpileValueExp value) (identForLevel level ++ name ++ " = ") "\n"
 
--- TODO implement
 transpileReturnStatement :: ValueExp -> Int -> Either String String
-transpileReturnStatement value level =  Right (identForLevel level ++ "return 0\n") -- TODO transpile valueExp
+transpileReturnStatement value level = errorOr (transpileValueExp value) (identForLevel level ++ "return") "\n"
 
 -- TODO add extra condition to optimize when if condition is constant
 transpileIfStatement :: BoolExp  -> Block -> Int -> Either String String
@@ -91,7 +90,44 @@ transpileFuncCallStatement name args level = Right (identForLevel level ++ "# No
 
 -- TODO implement
 transpileBoolExp :: BoolExp -> Either String String 
-transpileBoolExp boolExp = Right "True"
+transpileBoolExp TrueValue = Right "True"
+transpileBoolExp FalseValue = Right "False"
+transpileBoolExp (BoolVar name) = Right name
+transpileBoolExp (BoolFunc func args) = errorOrValue (transpileFuncCallValue func args)
+transpileBoolExp (BoolBinaryOperations op bool1 bool2) = errorOrValue (transpileBoolOperation op bool1 bool2)
+transpileBoolExp (Not bool) = errorOrValue (transpileNotBoolExp bool)
+transpileBoolExp (RelationalBinaryArithmetic op arith1 arith2) = errorOrValue (transpileRelationalArithmetic op arith1 arith2)
+transpileBoolExp (RelationalBinaryString op string1 string2) = errorOrValue (transpileRelationalString op string1 string2)
+
+-- TODO implement
+transpileBoolOperation :: BoolBinaryOperators -> BoolExp -> BoolExp -> Either String String
+transpileBoolOperation op bool1 bool2 = Right "True"
+
+-- TODO implement
+transpileNotBoolExp :: BoolExp -> Either String String
+transpileNotBoolExp bool = Right "False"
+
+transpileRelationalArithmetic :: RelationalBinaryOperator -> ArithmeticExp -> ArithmeticExp -> Either String String
+transpileRelationalArithmetic op arith1 arith2
+    | hasError arith1Result = errorOrValue arith1Result
+    | hasError (transpileRelationalOperator op) = errorOrValue (transpileRelationalOperator op)
+    | otherwise = errorOrPrepend (transpileArithmeticExp arith2) (unwrap arith1Result++ unwrap (transpileRelationalOperator op))
+    where arith1Result = transpileArithmeticExp arith1
+
+transpileRelationalString :: RelationalBinaryOperator -> StringExp  -> StringExp -> Either String String
+transpileRelationalString op string1 string2
+    | hasError string1Result = errorOrValue string1Result
+    | hasError (transpileRelationalOperator op) = errorOrValue (transpileRelationalOperator op)
+    | otherwise = errorOrPrepend (transpileStringExp string2) (unwrap string1Result ++ unwrap (transpileRelationalOperator op))
+    where string1Result = transpileStringExp string1
+
+transpileRelationalOperator :: RelationalBinaryOperator -> Either String String
+transpileRelationalOperator Equals = Right " == "
+transpileRelationalOperator NotEquals = Right " != "
+transpileRelationalOperator Less = Right " < "
+transpileRelationalOperator LessOrEqual = Right " <= "
+transpileRelationalOperator Greater = Right " > "
+transpileRelationalOperator GreaterOrEqual = Right " >= "
 
 -- TODO implement
 transpileArithmeticExp :: ArithmeticExp -> Either String String 

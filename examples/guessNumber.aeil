@@ -1,0 +1,15 @@
+func main() {
+    number = 10;
+    guessed = read("Guess number");
+    while (number != guessed) {
+        print("Wrong guess");
+        if (guessed < number) {
+            print("Your number is lower than our number");
+        }
+        else {
+            print("Your number is greater than our number");
+        }
+        guessed = read("Guess number");
+    }
+    print("Congratulations you won!!");
+}
