@@ -88,7 +88,7 @@ transpilePrintStatement text level = errorOr (transpileStringExp text) (identFor
 transpileFuncCallStatement :: String -> [ValueExp] -> Int -> Either String String 
 transpileFuncCallStatement name args level = Right (identForLevel level ++ "# Not implemented\n")
 
--- TODO implement
+-- Received bool expression should be reduced before calling
 transpileBoolExp :: BoolExp -> Either String String 
 transpileBoolExp TrueValue = Right "True"
 transpileBoolExp FalseValue = Right "False"
@@ -99,9 +99,17 @@ transpileBoolExp (Not bool) = errorOrValue (transpileNotBoolExp bool)
 transpileBoolExp (RelationalBinaryArithmetic op arith1 arith2) = errorOrValue (transpileRelationalArithmetic op arith1 arith2)
 transpileBoolExp (RelationalBinaryString op string1 string2) = errorOrValue (transpileRelationalString op string1 string2)
 
--- TODO implement
+-- assuming operation is irreducible
 transpileBoolOperation :: BoolBinaryOperators -> BoolExp -> BoolExp -> Either String String
-transpileBoolOperation op bool1 bool2 = Right "True"
+transpileBoolOperation op bool1 bool2
+    | hasError bool1Result = errorOrValue bool1Result
+    | hasError (transpileBoolBinaryOperators op) = errorOrValue (transpileBoolBinaryOperators op)
+    | otherwise = errorOrPrepend (transpileBoolExp bool2) (unwrap bool1Result ++ unwrap (transpileBoolBinaryOperators op))
+    where bool1Result = transpileBoolExp bool1
+
+transpileBoolBinaryOperators :: BoolBinaryOperators  -> Either String String
+transpileBoolBinaryOperators And = Right " and "
+transpileBoolBinaryOperators Or = Right " or "
 
 -- TODO implement
 transpileNotBoolExp :: BoolExp -> Either String String
