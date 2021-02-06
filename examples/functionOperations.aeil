@@ -1,0 +1,8 @@
+func main() {
+    if (testFunc() < func2(a)) {
+        ;
+    }
+    a = test(a,b,c) + test2(b);
+    b = (test() || true);
+    c = (newFunc() && newFunc(a));
+}

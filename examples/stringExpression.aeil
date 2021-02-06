@@ -1,4 +1,6 @@
 func main() {
     a = ("abc" ++ "def") ++       "efg";
     b= "Hello world";
+    print (a++b);
+    print (a++ " " ++ b);
 }

@@ -36,6 +36,7 @@ data ValueExp = BoolValue BoolExp
 data BoolExp = TrueValue
             | FalseValue
             | BoolVar Name
+            | BoolFunc Name [ValueExp]
             | BoolBinaryOperations BoolBinaryOperators BoolExp BoolExp
             | Not BoolExp
             | RelationalBinaryArithmetic RelationalBinaryOperator ArithmeticExp ArithmeticExp
@@ -55,6 +56,7 @@ data BoolBinaryOperators = And
 
 data ArithmeticExp = Number Integer
                | NumericVar Name
+               | NumericFunc Name [ValueExp]
                | Negate ArithmeticExp
                | ArithmeticBinaryOperation ArithmeticBinaryOperator ArithmeticExp ArithmeticExp
                deriving(Show)
@@ -70,6 +72,7 @@ data ArithmeticBinaryOperator = Add
 
 data StringExp = StringConstant String
                 | StringVar Name
+                | StringFunc Name [ValueExp]
                 | StringBinaryOperation StringOperators StringExp StringExp
                 deriving(Show)
 
