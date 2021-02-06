@@ -38,7 +38,11 @@ transpileFuncParameters :: [String] -> String
 transpileFuncParameters = intercalate ", " 
 
 transpileBlock :: Block -> Int -> Either String String
-transpileBlock block level = Right (identForLevel level ++ "pass\n")
+transpileBlock block level 
+    | null blockStatementsResults = Right (identForLevel level ++ "pass\n")
+    | hasProgramError blockStatementsResults = Left (getProgramErrors blockStatementsResults)
+    | otherwise = Right (concatMap unwrap blockStatementsResults)
+    where blockStatementsResults = fmap (flip transpileStatement level) (getBlockStatements block)
 
 transpileStatement :: Statement -> Int -> Either String String
 transpileStatement (Assign name value) level = errorOrValue (transpileAssignStatement name value level)
@@ -80,7 +84,7 @@ transpileWhileStatement condition block level
     where conditionResult = transpileBoolExp condition
 
 transpilePrintStatement :: StringExp -> Int -> Either String String
-transpilePrintStatement text level = errorOr (transpileStringExp text) (identForLevel level ++ "print(") ")"
+transpilePrintStatement text level = errorOr (transpileStringExp text) (identForLevel level ++ "print(") ")\n"
 
 -- TODO implement
 transpileFuncCallStatement :: String -> [ValueExp] -> Int -> Either String String 
@@ -92,4 +96,4 @@ transpileBoolExp boolExp = Right "True"
 
 -- TODO implement
 transpileStringExp :: StringExp -> Either String String 
-transpileStringExp stringExp = Right "# Not implemented"
+transpileStringExp stringExp = Right "\"# Not implemented\""

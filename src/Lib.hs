@@ -14,7 +14,8 @@ module Lib
         unwrap,
         errorOrValue,
         errorOr,
-        errorOrPrepend
+        errorOrPrepend,
+        getBlockStatements
     ) where
 
 import Data.Foldable
