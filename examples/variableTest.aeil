@@ -1,0 +1,32 @@
+func main() {
+    if (a < b) {
+        ;
+    }
+    if ("hola" == "") {
+        ;
+    }
+    if (a == "") {
+        ;
+    }
+    if (a ++ b == "") {
+        ;
+    }
+    if (a + b  + testFunc(a, b) == 5) {
+        ;
+    }
+    if (a || false) {
+        ;
+    }
+    if (a && b) {
+        ;
+    }
+    while (!a) {
+        ;
+    }
+    a = a + 1;
+    b = (a +b) * 2;
+    c = "hola" ++ a;
+    d = (a ++ b);   
+    e = func1(a) + func2(b);
+    f = (func1(a) && func2(c) || func3(d));
+}

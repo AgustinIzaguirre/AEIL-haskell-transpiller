@@ -23,3 +23,10 @@ compile code = do
         Right result -> case transpileProgram result of
                         Left error -> fail error
                         Right code -> writeFile "output.py" code >> print code
+
+-- compile when testing parser
+-- compile :: String -> IO Program
+-- compile code = do 
+--     case parse (parseFile <* eof)  "" code of
+--         Left error  -> print error >> fail "parse error"
+--         Right result -> return result
