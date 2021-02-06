@@ -130,7 +130,6 @@ ifStatement = do
     ifBlock <- braces block
     return (If condition ifBlock)
 
-
 ifElseStatement :: Parser Statement
 ifElseStatement = do
     reserved "if"
@@ -183,7 +182,6 @@ boolean = try realtionalExpression
         <|> try (reserved "true" >> return TrueValue)
         <|> try (reserved "false" >> return FalseValue)
         <|> parenthesis booleanExpression
-
 
 returnStatement :: Parser Statement
 returnStatement = do
