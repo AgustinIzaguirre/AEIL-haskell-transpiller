@@ -53,9 +53,8 @@ transpileStatement (While condition block) level = errorOrValue (transpileWhileS
 transpileStatement (PrintFunc text) level = errorOrValue (transpilePrintStatement text level)
 transpileStatement (FuncCall name args) level = errorOrValue (transpileFuncCallStatement name args level)
 
--- TODO implement
 transpileAssignStatement :: String -> ValueExp -> Int -> Either String String
-transpileAssignStatement name value level =  Right (identForLevel level ++ "# Not implemented\n")
+transpileAssignStatement name value level = errorOr (transpileValueExp value) (identForLevel level ++ name ++ " = ") "\n"
 
 -- TODO implement
 transpileReturnStatement :: ValueExp -> Int -> Either String String
@@ -94,6 +93,10 @@ transpileFuncCallStatement name args level = Right (identForLevel level ++ "# No
 transpileBoolExp :: BoolExp -> Either String String 
 transpileBoolExp boolExp = Right "True"
 
+-- TODO implement
+transpileArithmeticExp :: ArithmeticExp -> Either String String 
+transpileArithmeticExp arithmeticExp = Right "# not implemented"
+
 transpileStringExp :: StringExp -> Either String String 
 transpileStringExp (StringConstant text) = Right ("\"" ++ text ++ "\"")
 transpileStringExp (StringVar var) = Right var
@@ -112,3 +115,15 @@ transpileStringConcatenation string1 string2
     | hasError string2Result = errorOrValue string2Result
     | otherwise = errorOrAppend (transpileStringExp string1) (unwrap string2Result)
     where string2Result = transpileStringExp string2
+
+transpileValueExp:: ValueExp -> Either String String
+transpileValueExp (BoolValue boolExp) = errorOrValue (transpileBoolExp boolExp)
+transpileValueExp (NumberValue arithmeticExp) = errorOrValue (transpileArithmeticExp arithmeticExp ) -- TODO implement
+transpileValueExp (StringValue stringExp) = errorOrValue (transpileStringExp stringExp)
+transpileValueExp (Apply func args) = errorOrValue (transpileFuncCallValue func args)
+transpileValueExp (Var name) = Right name
+transpileValueExp (Read text) = errorOrValue (transpileReadFunc text)
+
+transpileReadFunc :: StringExp -> Either String String
+transpileReadFunc stringExp = errorOr (transpileStringExp stringExp) "input(" ")"
+
