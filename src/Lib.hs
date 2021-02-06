@@ -11,7 +11,10 @@ module Lib
         hasProgramError,
         getProgramErrors,
         hasError,
-        unwrap
+        unwrap,
+        errorOrValue,
+        errorOr,
+        errorOrPrepend
     ) where
 
 import Data.Foldable
@@ -60,12 +63,30 @@ hasError (Left _) = True
 hasError _ = False
 
 hasProgramError :: [Either String String] -> Bool
-hasProgramError functions = or (fmap hasError functions)
+hasProgramError results = or (fmap hasError results)
 
 getProgramErrors :: [Either String String] -> String 
-getProgramErrors functions
-    | hasProgramError functions = intercalate "  " $ fmap (either id id) (filter hasError functions)
+getProgramErrors results
+    | hasProgramError results = intercalate "  " $ fmap (either id id) (filter hasError results)
     | otherwise = ""
 
 unwrap :: Either String String -> String
 unwrap = either id id
+
+getBlockStatements :: Block -> [Statement]
+getBlockStatements Empty = []
+getBlockStatements (SingleAction statement) = [statement]
+getBlockStatements (Actions statement block) = statement : getBlockStatements block
+
+errorOr :: Either String String -> String -> String -> Either String String
+errorOr (Left errorMessage) prev post = Left errorMessage
+errorOr (Right code) prev post = Right (prev ++ code ++ post)
+
+errorOrPrepend :: Either String String -> String -> Either String String
+errorOrPrepend result prev = errorOr result prev ""
+
+errorOrAppend :: Either String String -> String -> Either String String
+errorOrAppend result post = errorOr result "" post
+
+errorOrValue :: Either String String -> Either String String
+errorOrValue result = errorOr result "" ""

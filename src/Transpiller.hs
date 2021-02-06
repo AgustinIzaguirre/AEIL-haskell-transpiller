@@ -38,5 +38,57 @@ transpileFuncParameters :: [String] -> String
 transpileFuncParameters = intercalate ", " 
 
 transpileBlock :: Block -> Int -> Either String String
-transpileBlock block level = Right (identForLevel 1 ++ "pass\n")
+transpileBlock block level = Right (identForLevel level ++ "pass\n")
 
+transpileStatement :: Statement -> Int -> Either String String
+transpileStatement (Assign name value) level = errorOrValue (transpileAssignStatement name value level)
+transpileStatement (Return value) level = errorOrValue (transpileReturnStatement value level)
+transpileStatement (If condition block) level = errorOrValue (transpileIfStatement condition block level)
+transpileStatement (IfElse condition ifBlock elseBlock) level = errorOrValue (transpileIfElseStatement condition ifBlock elseBlock level)
+transpileStatement (While condition block) level = errorOrValue (transpileWhileStatement condition block level)
+transpileStatement (PrintFunc text) level = errorOrValue (transpilePrintStatement text level)
+transpileStatement (FuncCall name args) level = errorOrValue (transpileFuncCallStatement name args level)
+
+-- TODO implement
+transpileAssignStatement :: String -> ValueExp -> Int -> Either String String
+transpileAssignStatement name value level =  Right (identForLevel level ++ "# Not implemented\n")
+
+transpileReturnStatement :: ValueExp -> Int -> Either String String
+transpileReturnStatement value level =  Right (identForLevel level ++ "return 0\n") -- TODO transpile valueExp
+
+-- TODO add extra condition to optimize when if condition is constant
+transpileIfStatement :: BoolExp  -> Block -> Int -> Either String String
+transpileIfStatement condition block level 
+    | hasError conditionResult = errorOrValue conditionResult
+    | otherwise = errorOrPrepend (transpileBlock block (level + 1)) 
+                                    (identForLevel level ++ "if " ++ unwrap conditionResult ++ ":\n")
+    where conditionResult = transpileBoolExp condition
+
+-- TODO add extra condition to optimize when if condition is constant
+transpileIfElseStatement :: BoolExp  -> Block -> Block -> Int -> Either String String
+transpileIfElseStatement condition ifBlock elseBlock level 
+    | hasError ifResult = errorOrValue ifResult
+    | otherwise = errorOrPrepend (transpileBlock elseBlock (level + 1)) (unwrap ifResult ++ identForLevel level ++ "else:\n")
+    where ifResult = transpileIfStatement condition ifBlock level
+
+transpileWhileStatement :: BoolExp  -> Block -> Int -> Either String String
+transpileWhileStatement condition block level 
+    | hasError conditionResult = errorOrValue conditionResult
+    | otherwise = errorOrPrepend (transpileBlock block (level + 1)) 
+                                    (identForLevel level ++ "while " ++ unwrap conditionResult ++ ":\n")
+    where conditionResult = transpileBoolExp condition
+
+transpilePrintStatement :: StringExp -> Int -> Either String String
+transpilePrintStatement text level = errorOr (transpileStringExp text) (identForLevel level ++ "print(") ")"
+
+-- TODO implement
+transpileFuncCallStatement :: String -> [ValueExp] -> Int -> Either String String 
+transpileFuncCallStatement name args level = Right (identForLevel level ++ "# Not implemented\n")
+
+-- TODO implement
+transpileBoolExp :: BoolExp -> Either String String 
+transpileBoolExp boolExp = Right "True"
+
+-- TODO implement
+transpileStringExp :: StringExp -> Either String String 
+transpileStringExp stringExp = Right "# Not implemented"
