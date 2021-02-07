@@ -10,7 +10,6 @@ import ErrorMessages
 -- hasMain $ map fst pairTest where pairTest is the array of [(FuncName, ([Parameters, FuncAST))]
 -- parameters to check if quantity matches on every call, funcName to check for main and to check function exists
 
--- TODO replace Maybe with Either
 transpileProgram :: Program -> Either String String
 transpileProgram program 
                 | hasMainFunction programFunctions = getFunctionsResult programFunctions
@@ -137,9 +136,31 @@ transpileRelationalOperator LessOrEqual = Right " <= "
 transpileRelationalOperator Greater = Right " > "
 transpileRelationalOperator GreaterOrEqual = Right " >= "
 
--- TODO implement
+-- expression is irreducible is called reduceArithmetic before transpileArithmeticExp
 transpileArithmeticExp :: ArithmeticExp -> Either String String 
-transpileArithmeticExp arithmeticExp = Right "# not implemented"
+transpileArithmeticExp (Number number) = Right (show number)
+transpileArithmeticExp (NumericVar name) = Right name
+transpileArithmeticExp (NumericFunc func args) = errorOrValue (transpileFuncCallValue func args)
+transpileArithmeticExp (Negate arith) = errorOrPrepend (transpileArithmeticExp arith) "-"
+transpileArithmeticExp (ArithmeticBinaryOperation op arith1 arith2) = errorOrValue (transpileArithmeticOperation op arith1 arith2)
+
+-- Asuming operation is irreducible
+transpileArithmeticOperation :: ArithmeticBinaryOperator -> ArithmeticExp  -> ArithmeticExp  -> Either String String
+transpileArithmeticOperation op arith1 arith2
+    | hasError arith1Result = errorOrValue arith1Result
+    | hasError (transpileArithmeticOperators op) = errorOrValue (transpileArithmeticOperators op)
+    | otherwise = errorOr (transpileArithmeticExp arith2) 
+                                    (unwrap arith1Result ++ "(" ++ unwrap (transpileArithmeticOperators op))
+                                    ")"
+    where arith1Result = transpileArithmeticExp arith1
+
+transpileArithmeticOperators :: ArithmeticBinaryOperator  -> Either String String
+transpileArithmeticOperators Add = Right " + "
+transpileArithmeticOperators Minus = Right " - "
+transpileArithmeticOperators Multiply = Right " * "
+transpileArithmeticOperators Divide = Right " / "
+transpileArithmeticOperators Modulo = Right " % "
+transpileArithmeticOperators Power = Right " ** "
 
 transpileStringExp :: StringExp -> Either String String 
 transpileStringExp (StringConstant text) = Right ("\"" ++ text ++ "\"")
