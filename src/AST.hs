@@ -43,6 +43,11 @@ data BoolExp = TrueValue
             | RelationalBinaryString RelationalBinaryOperator StringExp StringExp
             deriving(Show)
 
+instance Eq BoolExp where
+    (==) TrueValue TrueValue = True
+    (==) FalseValue FalseValue = True
+    (==) _ _ = False
+
 data RelationalBinaryOperator = Equals
                                 | NotEquals
                                 | Less

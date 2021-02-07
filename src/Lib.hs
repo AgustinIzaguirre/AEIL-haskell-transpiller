@@ -16,7 +16,8 @@ module Lib
         errorOr,
         errorOrPrepend,
         errorOrAppend,
-        getBlockStatements
+        getBlockStatements,
+        reduceBoolExp
     ) where
 
 import Data.Foldable
