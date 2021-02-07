@@ -85,7 +85,7 @@ transpilePrintStatement text level = errorOr (transpileStringExp text) (identFor
 
 -- TODO implement using funcCallValue
 transpileFuncCallStatement :: String -> [ValueExp] -> Int -> Either String String 
-transpileFuncCallStatement name args level = Right (identForLevel level ++ "# Not implemented\n")
+transpileFuncCallStatement name args level = errorOr (transpileFuncCallValue name args) (identForLevel level) "\n"
 
 -- Received bool expression should be reduced before calling
 transpileBoolExp :: BoolExp -> Either String String 
@@ -150,7 +150,7 @@ transpileArithmeticOperation op arith1 arith2
     | hasError arith1Result = errorOrValue arith1Result
     | hasError (transpileArithmeticOperators op) = errorOrValue (transpileArithmeticOperators op)
     | otherwise = errorOr (transpileArithmeticExp arith2) 
-                                    (unwrap arith1Result ++ "(" ++ unwrap (transpileArithmeticOperators op))
+                                    ("(" ++ unwrap arith1Result ++ unwrap (transpileArithmeticOperators op))
                                     ")"
     where arith1Result = transpileArithmeticExp arith1
 
@@ -170,10 +170,16 @@ transpileStringExp (StringBinaryOperation operator string1 string2) = errorOrVal
 
 -- TODO implement
 transpileFuncCallValue :: String -> [ValueExp] -> Either String String
-transpileFuncCallValue name args = Right (name ++ "()")
+transpileFuncCallValue name args = errorOr (transpileArguments args) (name ++ "(") ")"
+
+transpileArguments :: [ValueExp] -> Either String String
+transpileArguments args 
+    | hasProgramError argsResult = Left (getProgramErrors argsResult)
+    | otherwise = Right (intercalate "," (fmap unwrap argsResult))
+    where argsResult = fmap transpileValueExp args
 
 transpileStringOperation :: StringOperators -> StringExp  -> StringExp -> Either String String
-transpileStringOperation (Concat) string1 string2 = errorOrValue (transpileStringConcatenation string1 string2)
+transpileStringOperation Concat string1 string2 = errorOrValue (transpileStringConcatenation string1 string2)
 
 transpileStringConcatenation :: StringExp -> StringExp -> Either String String
 transpileStringConcatenation string1 string2
