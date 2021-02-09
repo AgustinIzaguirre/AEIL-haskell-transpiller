@@ -1,6 +1,7 @@
 import Test.HUnit
 import Lib
 import AST
+import Optimizer
 
 emptyFunction :: String -> [String] -> Function
 emptyFunction name params = Func name params Empty
