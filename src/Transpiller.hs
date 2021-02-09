@@ -5,6 +5,7 @@ import Data.List
 import AST
 import Lib
 import ErrorMessages
+import Optimizer
 
 -- Probabbly make a function that returns [(FuncName, ([Parameters, FuncAST))] from Program
 -- hasMain $ map fst pairTest where pairTest is the array of [(FuncName, ([Parameters, FuncAST))]
