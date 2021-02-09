@@ -112,19 +112,21 @@ reduceBoolOperation Or bool1 bool2 = reduceOr bool1 bool2
 reduceAnd :: BoolExp -> BoolExp -> BoolExp
 reduceAnd bool1 bool2
     | isFalseValue (reduceBoolExp bool1) || isFalseValue (reduceBoolExp bool2) = FalseValue
-    | isTrueValue (reduceBoolExp bool1) && isTrueValue (reduceBoolExp bool2) = TrueValue
+    | isTrueValue (reduceBoolExp bool1) = reduceBoolExp bool2
+    | isTrueValue (reduceBoolExp bool2) = reduceBoolExp bool1
     | otherwise = BoolBinaryOperations And (reduceBoolExp bool1) (reduceBoolExp bool2)
 
 reduceOr :: BoolExp -> BoolExp -> BoolExp
 reduceOr bool1 bool2
     | isTrueValue (reduceBoolExp bool1) || isTrueValue (reduceBoolExp bool2) = TrueValue
-    | isFalseValue (reduceBoolExp bool1) && isFalseValue (reduceBoolExp bool2) = FalseValue
+    | isFalseValue (reduceBoolExp bool1) = reduceBoolExp bool2
     | otherwise = BoolBinaryOperations Or (reduceBoolExp bool1) (reduceBoolExp bool2)
 
 reduceNot :: BoolExp -> BoolExp
 reduceNot bool
     | isTrueValue (reduceBoolExp bool) = FalseValue
     | isFalseValue (reduceBoolExp bool) = TrueValue
+    | otherwise = Not (reduceBoolExp bool)
 
 isFalseValue :: BoolExp -> Bool
 isFalseValue FalseValue = True
