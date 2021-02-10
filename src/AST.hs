@@ -30,6 +30,7 @@ data ValueExp = BoolValue BoolExp
                 | Apply Name [ValueExp]
                 | Var Name
                 | Read StringExp
+                | GetNumber StringExp
                 deriving(Show)
 
 

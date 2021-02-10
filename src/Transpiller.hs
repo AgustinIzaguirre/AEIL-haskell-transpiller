@@ -195,7 +195,10 @@ transpileValueExp (StringValue stringExp) = errorOrValue (transpileStringExp str
 transpileValueExp (Apply func args) = errorOrValue (transpileFuncCallValue func args)
 transpileValueExp (Var name) = Right name
 transpileValueExp (Read text) = errorOrValue (transpileReadFunc text)
+transpileValueExp (GetNumber text) = errorOrValue (transpileGetNumberFunc text)
 
 transpileReadFunc :: StringExp -> Either String String
 transpileReadFunc stringExp = errorOr (transpileStringExp stringExp) "input(" ")"
 
+transpileGetNumberFunc :: StringExp -> Either String String
+transpileGetNumberFunc stringExp = errorOr (transpileStringExp stringExp) "int(input(" "))"
