@@ -19,7 +19,7 @@ data Statement = Assign Name ValueExp
                 | If BoolExp Block
                 | IfElse BoolExp Block Block
                 | While BoolExp Block
-                | PrintFunc StringExp
+                | PrintFunc ValueExp
                 | FuncCall Name [ValueExp]
                 deriving(Show)
                 -- FuncCall TODO

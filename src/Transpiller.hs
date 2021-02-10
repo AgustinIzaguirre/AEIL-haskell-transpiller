@@ -47,7 +47,7 @@ transpileStatement (If condition block) level = errorOrValue (transpileIfStateme
 transpileStatement (IfElse condition ifBlock elseBlock) level = errorOrValue (transpileIfElseStatement (reduceBoolExp condition) 
                                                                                 ifBlock elseBlock level)
 transpileStatement (While condition block) level = errorOrValue (transpileWhileStatement (reduceBoolExp condition) block level)
-transpileStatement (PrintFunc text) level = errorOrValue (transpilePrintStatement (reduceStringExp text) level)
+transpileStatement (PrintFunc text) level = errorOrValue (transpilePrintStatement (reduceValueExp text) level)
 transpileStatement (FuncCall name args) level = errorOrValue (transpileFuncCallStatement name (fmap reduceValueExp args) level)
 
 transpileAssignStatement :: String -> ValueExp -> Int -> Either String String
@@ -81,8 +81,8 @@ transpileWhileStatement condition block level
                                     (identForLevel level ++ "while " ++ unwrap conditionResult ++ ":\n")
     where conditionResult = transpileBoolExp condition
 
-transpilePrintStatement :: StringExp -> Int -> Either String String
-transpilePrintStatement text level = errorOr (transpileStringExp text) (identForLevel level ++ "print(") ", end=\"\")\n"
+transpilePrintStatement :: ValueExp -> Int -> Either String String
+transpilePrintStatement text level = errorOr (transpileValueExp text) (identForLevel level ++ "print(") ", end=\"\")\n"
 
 transpileFuncCallStatement :: String -> [ValueExp] -> Int -> Either String String 
 transpileFuncCallStatement name args level = errorOr (transpileFuncCallValue name args) (identForLevel level) "\n"

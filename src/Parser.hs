@@ -149,7 +149,7 @@ whileStatement = do
 printFuncStatement :: Parser Statement
 printFuncStatement = do
     reserved "print"
-    text <- parenthesis stringExpression
+    text <- parenthesis valueExpression
     semiColon
     return (PrintFunc text)
 
