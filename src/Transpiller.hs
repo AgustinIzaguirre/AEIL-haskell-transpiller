@@ -176,7 +176,7 @@ transpileFuncCallValue name args = errorOr (transpileArguments args) (name ++ "(
 transpileArguments :: [ValueExp] -> Either String String
 transpileArguments args 
     | hasProgramError argsResult = Left (getProgramErrors argsResult)
-    | otherwise = Right (intercalate "," (fmap unwrap argsResult))
+    | otherwise = Right (intercalate ", " (fmap unwrap argsResult))
     where argsResult = fmap transpileValueExp args
 
 transpileStringOperation :: StringOperators -> StringExp  -> StringExp -> Either String String
