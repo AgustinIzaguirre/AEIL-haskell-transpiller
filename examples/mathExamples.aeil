@@ -1,0 +1,25 @@
+func tableOfTwo() {
+    print("Table of two from 1 to 10:");
+    i = 1;
+    while (i <= 11) {
+        multiple = 2 * i;
+        print(multiple);
+        i = i + 1;
+    }
+}
+
+func powerOfTwo() {
+   print("Power of two from 1 to 10:");
+    i = 1;
+    while (i <= 11) {
+        power = 2 ** i;
+        print(power);
+        i = i + 1;
+    }
+}
+
+func main() {
+    tableOfTwo();
+    print("");
+    powerOfTwo();
+}

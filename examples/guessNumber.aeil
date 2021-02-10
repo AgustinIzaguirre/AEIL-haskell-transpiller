@@ -1,0 +1,9 @@
+func main() {
+    number = "10";
+    guessed = read("Guess a number from 1 to 10: ");
+    while (number != guessed) {
+        print("Wrong guess");
+        guessed = read("Guess number: ");
+    }
+    print("Congratulations you won!!");
+}

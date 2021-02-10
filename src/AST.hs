@@ -43,6 +43,11 @@ data BoolExp = TrueValue
             | RelationalBinaryString RelationalBinaryOperator StringExp StringExp
             deriving(Show)
 
+instance Eq BoolExp where
+    (==) TrueValue TrueValue = True
+    (==) FalseValue FalseValue = True
+    (==) _ _ = False
+
 data RelationalBinaryOperator = Equals
                                 | NotEquals
                                 | Less
@@ -68,6 +73,10 @@ data ArithmeticBinaryOperator = Add
                                 | Modulo
                                 | Power
                                 deriving(Show)
+
+instance Eq ArithmeticExp where
+    (==) (Number number1) (Number number2) = number1 == number2
+    (==) _ _ = False
 
 
 data StringExp = StringConstant String
