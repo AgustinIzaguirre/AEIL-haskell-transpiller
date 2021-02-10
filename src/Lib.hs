@@ -23,7 +23,9 @@ module Lib
         getNumber,
         isZero,
         isOne,
-        integerPower
+        integerPower,
+        isStringConst,
+        getStringVal
     ) where
 
 import Data.Foldable
@@ -109,14 +111,14 @@ isTrueValue TrueValue = True
 isTrueValue _ = False
 
 isNumber :: ArithmeticExp -> Bool
-isNumber (Number number) = True
+isNumber (Number _) = True
 isNumber _ = False
 
 safeGetNumber :: ArithmeticExp -> Maybe Integer
 safeGetNumber (Number number) = Just number
 safeGetNumber _ = Nothing
 
--- Only call when isNumber is true
+-- Only call when isNumber is True
 getNumber :: ArithmeticExp -> Integer
 getNumber (Number number) = number
 getNumber _ = 0
@@ -135,3 +137,16 @@ integerPower base exponent
     | base == 0 = 1
     | exponent == 1 = base
     | otherwise = base * integerPower base (exponent - 1)
+
+isStringConst :: StringExp -> Bool
+isStringConst (StringConstant _) = True
+isStringConst _ = False
+
+safeGetStringVal :: StringExp -> Maybe String
+safeGetStringVal (StringConstant string) = Just string
+safeGetStringVal _ = Nothing
+
+-- Only call when isStringConst is True
+getStringVal :: StringExp -> String
+getStringVal (StringConstant string) = string
+getStringVal _ = ""
