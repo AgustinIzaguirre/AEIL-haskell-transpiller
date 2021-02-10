@@ -74,6 +74,11 @@ data ArithmeticBinaryOperator = Add
                                 | Power
                                 deriving(Show)
 
+instance Eq ArithmeticExp where
+    (==) (Number number1) (Number number2) = number1 == number2
+    (==) _ _ = False
+
+
 data StringExp = StringConstant String
                 | StringVar Name
                 | StringFunc Name [ValueExp]
