@@ -84,7 +84,7 @@ transpileWhileStatement condition block level
     where conditionResult = transpileBoolExp condition
 
 transpilePrintStatement :: StringExp -> Int -> Either String String
-transpilePrintStatement text level = errorOr (transpileStringExp text) (identForLevel level ++ "print(") ")\n"
+transpilePrintStatement text level = errorOr (transpileStringExp text) (identForLevel level ++ "print(") ", end=\"\")\n"
 
 transpileFuncCallStatement :: String -> [ValueExp] -> Int -> Either String String 
 transpileFuncCallStatement name args level = errorOr (transpileFuncCallValue name args) (identForLevel level) "\n"
