@@ -60,6 +60,8 @@ transpileReturnStatement value level = errorOr (transpileValueExp value) (identF
 transpileIfStatement :: BoolExp  -> Block -> Int -> Either String String
 transpileIfStatement condition block level 
     | hasError conditionResult = errorOrValue conditionResult
+    | isTrueValue condition = errorOrValue (transpileBlock block level)
+    | isFalseValue condition = Right ""
     | otherwise = errorOrPrepend (transpileBlock block (level + 1)) 
                                     (identForLevel level ++ "if " ++ unwrap conditionResult ++ ":\n")
     where conditionResult = transpileBoolExp condition
@@ -68,12 +70,15 @@ transpileIfStatement condition block level
 transpileIfElseStatement :: BoolExp  -> Block -> Block -> Int -> Either String String
 transpileIfElseStatement condition ifBlock elseBlock level 
     | hasError ifResult = errorOrValue ifResult
+    | isTrueValue condition = errorOrValue (transpileBlock ifBlock level)
+    | isFalseValue condition = errorOrValue (transpileBlock elseBlock level)
     | otherwise = errorOrPrepend (transpileBlock elseBlock (level + 1)) (unwrap ifResult ++ identForLevel level ++ "else:\n")
     where ifResult = transpileIfStatement condition ifBlock level
 
 transpileWhileStatement :: BoolExp  -> Block -> Int -> Either String String
 transpileWhileStatement condition block level 
     | hasError conditionResult = errorOrValue conditionResult
+    | isFalseValue condition = Right ""
     | otherwise = errorOrPrepend (transpileBlock block (level + 1)) 
                                     (identForLevel level ++ "while " ++ unwrap conditionResult ++ ":\n")
     where conditionResult = transpileBoolExp condition
@@ -165,7 +170,6 @@ transpileStringExp (StringVar var) = Right var
 transpileStringExp (StringFunc func args) = errorOrValue (transpileFuncCallValue func args)
 transpileStringExp (StringBinaryOperation operator string1 string2) = errorOrValue (transpileStringOperation operator string1 string2)
 
--- TODO implement
 transpileFuncCallValue :: String -> [ValueExp] -> Either String String
 transpileFuncCallValue name args = errorOr (transpileArguments args) (name ++ "(") ")"
 

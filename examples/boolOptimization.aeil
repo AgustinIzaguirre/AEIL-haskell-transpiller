@@ -1,9 +1,10 @@
 func main() {
+    a = true;
     if (true && (true && (false || false)) && !true) {
         print("This print inside if should not appear\n");
     }
     if (true && (true && (false || false)) && !true || a) {
-         print ("This should be first print to appear\n");
+         print ("This should be first print to appear inside if a\n");
     }
     if (true && false) {
         ;
