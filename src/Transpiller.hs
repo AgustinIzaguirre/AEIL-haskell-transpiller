@@ -7,8 +7,6 @@ import Lib
 import ErrorMessages
 import Optimizer
 
--- Probabbly make a function that returns [(FuncName, ([Parameters, FuncAST))] from Program
--- hasMain $ map fst pairTest where pairTest is the array of [(FuncName, ([Parameters, FuncAST))]
 -- parameters to check if quantity matches on every call, funcName to check for main and to check function exists
 
 transpileProgram :: Program -> Either String String

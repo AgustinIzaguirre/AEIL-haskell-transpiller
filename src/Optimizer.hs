@@ -1,5 +1,6 @@
 module Optimizer 
     (
+        reduceValueExp,
         reduceBoolExp,
         reduceArithmeticExp,
         reduceStringExp
@@ -7,6 +8,13 @@ module Optimizer
 
 import AST
 import Lib
+
+reduceValueExp :: ValueExp -> ValueExp
+reduceValueExp (BoolValue boolExp) = BoolValue (reduceBoolExp boolExp)
+reduceValueExp (NumberValue arithExp) = NumberValue (reduceArithmeticExp arithExp)
+reduceValueExp (StringValue stringExp) = StringValue (reduceStringExp stringExp)
+reduceValueExp (Read stringExp) = Read (reduceStringExp stringExp)
+reduceValueExp valueExp = valueExp
 
 reduceBoolExp :: BoolExp -> BoolExp
 reduceBoolExp (BoolBinaryOperations op bool1 bool2) = reduceBoolOperation op bool1 bool2
