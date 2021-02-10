@@ -1,18 +1,27 @@
-module Optimizer where
+module Optimizer 
+    (
+        reduceValueExp,
+        reduceBoolExp,
+        reduceArithmeticExp,
+        reduceStringExp
+    ) where
 
 import AST
 import Lib
 
--- TODO also reduce relational expressions
+reduceValueExp :: ValueExp -> ValueExp
+reduceValueExp (BoolValue boolExp) = BoolValue (reduceBoolExp boolExp)
+reduceValueExp (NumberValue arithExp) = NumberValue (reduceArithmeticExp arithExp)
+reduceValueExp (StringValue stringExp) = StringValue (reduceStringExp stringExp)
+reduceValueExp (Read stringExp) = Read (reduceStringExp stringExp)
+reduceValueExp valueExp = valueExp
+
 reduceBoolExp :: BoolExp -> BoolExp
-reduceBoolExp TrueValue = TrueValue
-reduceBoolExp FalseValue = FalseValue
-reduceBoolExp (BoolVar name) = BoolVar name
-reduceBoolExp (BoolFunc func args) = BoolFunc func args
 reduceBoolExp (BoolBinaryOperations op bool1 bool2) = reduceBoolOperation op bool1 bool2
 reduceBoolExp (Not bool) = reduceNot bool
-reduceBoolExp (RelationalBinaryArithmetic op arith1 arith2) = RelationalBinaryArithmetic op arith1 arith2
-reduceBoolExp (RelationalBinaryString op string1 string2) = RelationalBinaryString op string1 string2
+reduceBoolExp (RelationalBinaryArithmetic op arith1 arith2) = reduceRelationalArithmetic op arith1 arith2
+reduceBoolExp (RelationalBinaryString op string1 string2) = reduceRelationalString op string1 string2
+reduceBoolExp boolExp = boolExp
 
 reduceBoolOperation :: BoolBinaryOperators -> BoolExp -> BoolExp -> BoolExp
 reduceBoolOperation And bool1 bool2 = reduceAnd bool1 bool2
@@ -38,11 +47,9 @@ reduceNot bool
     | otherwise = Not (reduceBoolExp bool)
 
 reduceArithmeticExp :: ArithmeticExp -> ArithmeticExp
-reduceArithmeticExp (Number number) = Number number
-reduceArithmeticExp (NumericVar name) = NumericVar name
-reduceArithmeticExp (NumericFunc func args) = NumericFunc func args
 reduceArithmeticExp (Negate arith) = reduceNegation arith
 reduceArithmeticExp (ArithmeticBinaryOperation op arith1 arith2) = reduceArithmeticOperation op arith1 arith2
+reduceArithmeticExp arithExp = arithExp
 
 reduceNegation :: ArithmeticExp -> ArithmeticExp
 reduceNegation arith
@@ -50,114 +57,114 @@ reduceNegation arith
     | otherwise = Negate (reduceArithmeticExp arith)
 
 reduceArithmeticOperation :: ArithmeticBinaryOperator -> ArithmeticExp -> ArithmeticExp -> ArithmeticExp
-reduceArithmeticOperation Add arith1 arith2 = reduceAdd arith1 arith2
-reduceArithmeticOperation Minus arith1 arith2 = reduceMinus arith1 arith2
-reduceArithmeticOperation Multiply arith1 arith2 = reduceMultiply arith1 arith2
-reduceArithmeticOperation Divide arith1 arith2 = reduceDivide arith1 arith2
-reduceArithmeticOperation Modulo arith1 arith2 = reduceModulo arith1 arith2
-reduceArithmeticOperation Power arith1 arith2 = reducePower arith1 arith2
+reduceArithmeticOperation Add arith1 arith2 = reduceAdd (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
+reduceArithmeticOperation Minus arith1 arith2 = reduceMinus (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
+reduceArithmeticOperation Multiply arith1 arith2 = reduceMultiply (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
+reduceArithmeticOperation Divide arith1 arith2 = reduceDivide (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
+reduceArithmeticOperation Modulo arith1 arith2 = reduceModulo (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
+reduceArithmeticOperation Power arith1 arith2 = reducePower (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
 
 reduceAdd :: ArithmeticExp -> ArithmeticExp -> ArithmeticExp
-reduceAdd arith1 arith2
-    | isZero (reduceArithmeticExp arith1) = reduceArithmeticExp arith2
-    | isZero (reduceArithmeticExp arith2) = reduceArithmeticExp arith1
-    | isNumber (reduceArithmeticExp arith1) 
-        && isNumber (reduceArithmeticExp arith2) = Number (getNumber (reduceArithmeticExp arith1) +
-                                                            getNumber (reduceArithmeticExp arith2))
-    | otherwise = ArithmeticBinaryOperation Add (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
-
+reduceAdd reduced1 reduced2
+    | isZero reduced1 = reduceArithmeticExp reduced2
+    | isZero (reduceArithmeticExp reduced2) = reduced1
+    | otherwise = reduceGenericArithOperation reduced1 reduced2 (+) Add
+    
 reduceMinus :: ArithmeticExp -> ArithmeticExp -> ArithmeticExp
-reduceMinus arith1 arith2
-    | isZero (reduceArithmeticExp arith1) = reduceArithmeticExp (Negate arith2)
-    | isZero (reduceArithmeticExp arith2) = reduceArithmeticExp arith1
-    | isNumber (reduceArithmeticExp arith1) 
-        && isNumber (reduceArithmeticExp arith2) = Number (getNumber (reduceArithmeticExp arith1) -
-                                                            getNumber (reduceArithmeticExp arith2))
-    | otherwise = ArithmeticBinaryOperation Minus (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
-
+reduceMinus reduced1 reduced2
+    | isZero reduced1 = reduceArithmeticExp (Negate reduced2)
+    | isZero reduced2 = reduced1
+    | otherwise = reduceGenericArithOperation reduced1 reduced2 (-) Minus
+    
 reduceMultiply :: ArithmeticExp -> ArithmeticExp -> ArithmeticExp
-reduceMultiply arith1 arith2
-    | isZero (reduceArithmeticExp arith1) || isZero (reduceArithmeticExp arith2) = Number 0
-    | isOne (reduceArithmeticExp arith1) = reduceArithmeticExp arith2
-    | isOne (reduceArithmeticExp arith2) = reduceArithmeticExp arith1
-    | isNumber (reduceArithmeticExp arith1) 
-        && isNumber (reduceArithmeticExp arith2) = Number (getNumber (reduceArithmeticExp arith1) *
-                                                            getNumber (reduceArithmeticExp arith2))
-    | otherwise = ArithmeticBinaryOperation Multiply (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
-
+reduceMultiply reduced1 reduced2
+    | isZero reduced1 || isZero reduced2 = Number 0
+    | isOne reduced1 = reduced2
+    | isOne reduced2 = reduced1
+    | otherwise = reduceGenericArithOperation reduced1 reduced2 (*) Multiply
+    
 reduceDivide :: ArithmeticExp -> ArithmeticExp -> ArithmeticExp
-reduceDivide arith1 arith2
-    | isZero (reduceArithmeticExp arith1) = Number 0
-    | isOne (reduceArithmeticExp arith2) = reduceArithmeticExp arith1
-    | isNumber (reduceArithmeticExp arith1) 
-        && isNumber (reduceArithmeticExp arith2) = Number (getNumber (reduceArithmeticExp arith1) `div`
-                                                            getNumber (reduceArithmeticExp arith2))
-    | otherwise = ArithmeticBinaryOperation Divide (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
-
+reduceDivide reduced1 reduced2
+    | isZero reduced1 = Number 0
+    | isOne reduced2 = reduced1
+    | otherwise = reduceGenericArithOperation reduced1 reduced2 div Divide
+    
 reduceModulo :: ArithmeticExp -> ArithmeticExp -> ArithmeticExp
-reduceModulo arith1 arith2
-    | isZero (reduceArithmeticExp arith1) || isOne (reduceArithmeticExp arith2) = Number 0
-    | isNumber (reduceArithmeticExp arith1) 
-        && isNumber (reduceArithmeticExp arith2) = Number (getNumber (reduceArithmeticExp arith1) `mod`
-                                                            getNumber (reduceArithmeticExp arith2))
-    | otherwise = ArithmeticBinaryOperation Modulo (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
+reduceModulo reduced1 reduced2
+    | isZero reduced1 || isOne reduced2 = Number 0
+    | otherwise = reduceGenericArithOperation reduced1 reduced2 mod Modulo
 
 reducePower :: ArithmeticExp -> ArithmeticExp -> ArithmeticExp
-reducePower arith1 arith2
-    | isZero (reduceArithmeticExp arith2) || isOne (reduceArithmeticExp arith1) = Number 1
-    | isZero (reduceArithmeticExp arith1) = Number 0
-    | isNumber (reduceArithmeticExp arith1) 
-        && isNumber (reduceArithmeticExp arith2) = Number (getNumber (reduceArithmeticExp arith1) `integerPower`
-                                                            getNumber (reduceArithmeticExp arith2))
-    | otherwise = ArithmeticBinaryOperation Modulo (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
+reducePower reduced1 reduced2
+    | isZero reduced2 || isOne reduced1 = Number 1
+    | isZero reduced1 = Number 0
+    | otherwise = reduceGenericArithOperation reduced1 reduced2 integerPower Power
+    
+reduceGenericArithOperation :: ArithmeticExp -> ArithmeticExp -> (Integer -> Integer -> Integer) -> ArithmeticBinaryOperator -> ArithmeticExp
+reduceGenericArithOperation reduced1 reduced2 f op
+    | isNumber reduced1 && isNumber reduced2 = Number (f (getNumber reduced1) (getNumber reduced2))
+    | otherwise = ArithmeticBinaryOperation op reduced1 reduced2
 
 reduceRelationalArithmetic :: RelationalBinaryOperator -> ArithmeticExp -> ArithmeticExp -> BoolExp
-reduceRelationalArithmetic Equals arith1 arith2 = reduceArithEquals arith1 arith2
-reduceRelationalArithmetic NotEquals arith1 arith2 = reduceArithNotEquals arith1 arith2
-reduceRelationalArithmetic Less arith1 arith2 = reduceArithLess arith1 arith2
-reduceRelationalArithmetic LessOrEqual arith1 arith2 = reduceArithLessOrEqual arith1 arith2
-reduceRelationalArithmetic Greater arith1 arith2 = reduceArithGreater arith1 arith2
-reduceRelationalArithmetic GreaterOrEqual arith1 arith2 = reduceArithGreaterOrEqual arith1 arith2
+reduceRelationalArithmetic Equals arith1 arith2 = reduceRelationalArithOp (reduceArithmeticExp arith1) 
+                                                                            (reduceArithmeticExp arith2)
+                                                                            (==) Equals
+reduceRelationalArithmetic NotEquals arith1 arith2 = reduceRelationalArithOp (reduceArithmeticExp arith1) 
+                                                                            (reduceArithmeticExp arith2)
+                                                                            (/=) NotEquals
+reduceRelationalArithmetic Less arith1 arith2 = reduceRelationalArithOp (reduceArithmeticExp arith1) 
+                                                                        (reduceArithmeticExp arith2)
+                                                                        (<) Less
+reduceRelationalArithmetic LessOrEqual arith1 arith2 = reduceRelationalArithOp (reduceArithmeticExp arith1) 
+                                                                                (reduceArithmeticExp arith2)
+                                                                                (<=) LessOrEqual
+reduceRelationalArithmetic Greater arith1 arith2 = reduceRelationalArithOp (reduceArithmeticExp arith1) 
+                                                                            (reduceArithmeticExp arith2)
+                                                                            (>) Greater 
+reduceRelationalArithmetic GreaterOrEqual arith1 arith2 = reduceRelationalArithOp (reduceArithmeticExp arith1) 
+                                                                                    (reduceArithmeticExp arith2)
+                                                                                    (>=) GreaterOrEqual
 
-reduceArithEquals :: ArithmeticExp -> ArithmeticExp -> BoolExp
-reduceArithEquals arith1 arith2
-    | isNumber (reduceArithmeticExp arith1) 
-        && isNumber (reduceArithmeticExp arith2) = if getNumber (reduceArithmeticExp arith1) == getNumber (reduceArithmeticExp arith2)
-                                                    then TrueValue
-                                                    else FalseValue
-    | otherwise = RelationalBinaryArithmetic Equals (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
+reduceRelationalArithOp :: ArithmeticExp -> ArithmeticExp -> (Integer -> Integer -> Bool) -> RelationalBinaryOperator -> BoolExp
+reduceRelationalArithOp arith1 arith2 f op
+    | isNumber arith1 && isNumber arith2 = if f (getNumber arith1) (getNumber arith2) then TrueValue else FalseValue
+    | otherwise = RelationalBinaryArithmetic op arith1 arith2
 
-reduceArithNotEquals :: ArithmeticExp -> ArithmeticExp -> BoolExp
-reduceArithNotEquals arith1 arith2 = reduceBoolExp (Not (RelationalBinaryArithmetic Equals arith1 arith2))
+reduceStringExp :: StringExp  -> StringExp
+reduceStringExp (StringBinaryOperation op string1 string2) = reduceStringOperation op string1 string2
+reduceStringExp stringExp = stringExp
 
-reduceArithLess :: ArithmeticExp -> ArithmeticExp -> BoolExp
-reduceArithLess arith1 arith2
-    | isNumber (reduceArithmeticExp arith1) 
-        && isNumber (reduceArithmeticExp arith2) = if getNumber (reduceArithmeticExp arith1) < getNumber (reduceArithmeticExp arith2)
-                                                    then TrueValue
-                                                    else FalseValue
-    | otherwise = RelationalBinaryArithmetic Equals (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
+reduceStringOperation :: StringOperators -> StringExp  -> StringExp -> StringExp
+reduceStringOperation Concat string1 string2 = reduceConcat (reduceStringExp string1) (reduceStringExp string2)
 
-reduceArithLessOrEqual :: ArithmeticExp -> ArithmeticExp -> BoolExp
-reduceArithLessOrEqual arith1 arith2
-    | isNumber (reduceArithmeticExp arith1) 
-        && isNumber (reduceArithmeticExp arith2) = if getNumber (reduceArithmeticExp arith1) <= getNumber (reduceArithmeticExp arith2)
-                                                    then TrueValue
-                                                    else FalseValue
-    | otherwise = RelationalBinaryArithmetic Equals (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
+reduceConcat :: StringExp -> StringExp -> StringExp
+reduceConcat reducedString1 reducedString2
+    | isStringConst reducedString1 && isStringConst reducedString2 = StringConstant (getStringVal reducedString1 ++ 
+                                                                                        getStringVal reducedString2)
+    | otherwise = StringBinaryOperation Concat reducedString1 reducedString2
 
-reduceArithGreater :: ArithmeticExp -> ArithmeticExp -> BoolExp
-reduceArithGreater arith1 arith2
-    | isNumber (reduceArithmeticExp arith1) 
-        && isNumber (reduceArithmeticExp arith2) = if getNumber (reduceArithmeticExp arith1) > getNumber (reduceArithmeticExp arith2)
-                                                    then TrueValue
-                                                    else FalseValue
-    | otherwise = RelationalBinaryArithmetic Equals (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
+reduceRelationalString :: RelationalBinaryOperator -> StringExp  -> StringExp  -> BoolExp
+reduceRelationalString Equals string1 string2 = reduceRelationalStringOp (reduceStringExp string1) 
+                                                                            (reduceStringExp string2)
+                                                                            (==) Equals
+reduceRelationalString NotEquals string1 string2 = reduceRelationalStringOp (reduceStringExp string1) 
+                                                                            (reduceStringExp string2)
+                                                                            (/=) NotEquals
+reduceRelationalString Less string1 string2 = reduceRelationalStringOp (reduceStringExp string1) 
+                                                                        (reduceStringExp string2)
+                                                                        (<) Less
+reduceRelationalString LessOrEqual string1 string2 = reduceRelationalStringOp (reduceStringExp string1) 
+                                                                                (reduceStringExp string2)
+                                                                                (<=) LessOrEqual
+reduceRelationalString Greater string1 string2 = reduceRelationalStringOp (reduceStringExp string1) 
+                                                                            (reduceStringExp string2)
+                                                                            (>) Greater 
+reduceRelationalString GreaterOrEqual string1 string2 = reduceRelationalStringOp (reduceStringExp string1) 
+                                                                                    (reduceStringExp string2)
+                                                                                    (>=) GreaterOrEqual
 
-reduceArithGreaterOrEqual :: ArithmeticExp -> ArithmeticExp -> BoolExp
-reduceArithGreaterOrEqual arith1 arith2
-    | isNumber (reduceArithmeticExp arith1) 
-        && isNumber (reduceArithmeticExp arith2) = if getNumber (reduceArithmeticExp arith1) >= getNumber (reduceArithmeticExp arith2)
-                                                    then TrueValue
-                                                    else FalseValue
-    | otherwise = RelationalBinaryArithmetic Equals (reduceArithmeticExp arith1) (reduceArithmeticExp arith2)
+reduceRelationalStringOp :: StringExp  -> StringExp  -> (String -> String -> Bool) -> RelationalBinaryOperator -> BoolExp
+reduceRelationalStringOp string1 string2 f op
+    | isStringConst string1 && isStringConst string2 = if f (getStringVal string1) (getStringVal string2) 
+                                                        then TrueValue else FalseValue
+    | otherwise = RelationalBinaryString op string1 string2

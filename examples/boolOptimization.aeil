@@ -1,0 +1,27 @@
+func main() {
+    a = true;
+    if (true && (true && (false || false)) && !true) {
+        print("This print inside if should not appear\n");
+    }
+    if (true && (true && (false || false)) && !true || a) {
+         print ("This should be first print to appear inside if a\n");
+    }
+    if (true && false) {
+        ;
+    }
+    else {
+        print("This should be outside if else\n");
+    }
+    while (false || (true && ! false)) {
+        print("This should be inside a while True\n");
+    }
+    if (true || (4 < 10)) {
+        print ("This should appear outside if and else ommited\n");
+    }
+    else {
+        print("This print inside else should not appear\n");
+    }
+    while (true && false) {
+        print("This print inside while should not appear");
+    }
+}

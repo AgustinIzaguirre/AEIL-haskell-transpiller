@@ -1,0 +1,10 @@
+func main() {
+    a = 4 + 10 ** 2 * 3 - 100;
+    print ("a should be = 204\n");
+    testFunc (4 % 2, (-4) ** 2 + 4 / 2);
+    print("testfunc call should be =  testFunc(0, 18)\n");
+}
+
+func testFunc(arg1, arg2) {
+    ;
+}
