@@ -7,8 +7,6 @@ import Lib
 import ErrorMessages
 import Optimizer
 
--- parameters to check if quantity matches on every call, funcName to check for main and to check function exists
-
 transpileProgram :: Program -> Either String String
 transpileProgram program 
                 | hasMainFunction programFunctions = getFunctionsResult programFunctions
@@ -43,13 +41,14 @@ transpileBlock block level
     where blockStatementsResults = fmap (flip transpileStatement level) (getBlockStatements block)
 
 transpileStatement :: Statement -> Int -> Either String String
-transpileStatement (Assign name value) level = errorOrValue (transpileAssignStatement name value level)
-transpileStatement (Return value) level = errorOrValue (transpileReturnStatement value level)
-transpileStatement (If condition block) level = errorOrValue (transpileIfStatement condition block level)
-transpileStatement (IfElse condition ifBlock elseBlock) level = errorOrValue (transpileIfElseStatement condition ifBlock elseBlock level)
-transpileStatement (While condition block) level = errorOrValue (transpileWhileStatement condition block level)
-transpileStatement (PrintFunc text) level = errorOrValue (transpilePrintStatement text level)
-transpileStatement (FuncCall name args) level = errorOrValue (transpileFuncCallStatement name args level)
+transpileStatement (Assign name value) level = errorOrValue (transpileAssignStatement name (reduceValueExp value) level)
+transpileStatement (Return value) level = errorOrValue (transpileReturnStatement (reduceValueExp value) level)
+transpileStatement (If condition block) level = errorOrValue (transpileIfStatement (reduceBoolExp condition) block level)
+transpileStatement (IfElse condition ifBlock elseBlock) level = errorOrValue (transpileIfElseStatement (reduceBoolExp condition) 
+                                                                                ifBlock elseBlock level)
+transpileStatement (While condition block) level = errorOrValue (transpileWhileStatement (reduceBoolExp condition) block level)
+transpileStatement (PrintFunc text) level = errorOrValue (transpilePrintStatement (reduceStringExp text) level)
+transpileStatement (FuncCall name args) level = errorOrValue (transpileFuncCallStatement name (fmap reduceValueExp args) level)
 
 transpileAssignStatement :: String -> ValueExp -> Int -> Either String String
 transpileAssignStatement name value level = errorOr (transpileValueExp value) (identForLevel level ++ name ++ " = ") "\n"
@@ -82,7 +81,6 @@ transpileWhileStatement condition block level
 transpilePrintStatement :: StringExp -> Int -> Either String String
 transpilePrintStatement text level = errorOr (transpileStringExp text) (identForLevel level ++ "print(") ")\n"
 
--- TODO implement using funcCallValue
 transpileFuncCallStatement :: String -> [ValueExp] -> Int -> Either String String 
 transpileFuncCallStatement name args level = errorOr (transpileFuncCallValue name args) (identForLevel level) "\n"
 
@@ -102,7 +100,7 @@ transpileBoolOperation :: BoolBinaryOperators -> BoolExp -> BoolExp -> Either St
 transpileBoolOperation op bool1 bool2
     | hasError bool1Result = errorOrValue bool1Result
     | hasError (transpileBoolBinaryOperators op) = errorOrValue (transpileBoolBinaryOperators op)
-    | otherwise = errorOrPrepend (transpileBoolExp bool2) (unwrap bool1Result ++ unwrap (transpileBoolBinaryOperators op))
+    | otherwise = errorOr (transpileBoolExp bool2) (" ( " ++ unwrap bool1Result ++ unwrap (transpileBoolBinaryOperators op)) " )"
     where bool1Result = transpileBoolExp bool1
 
 transpileBoolBinaryOperators :: BoolBinaryOperators  -> Either String String
@@ -111,20 +109,20 @@ transpileBoolBinaryOperators Or = Right " or "
 
 -- TODO implement
 transpileNotBoolExp :: BoolExp -> Either String String
-transpileNotBoolExp bool = Right "False"
+transpileNotBoolExp bool = errorOr (transpileBoolExp bool) "not ( " " )"
 
 transpileRelationalArithmetic :: RelationalBinaryOperator -> ArithmeticExp -> ArithmeticExp -> Either String String
 transpileRelationalArithmetic op arith1 arith2
     | hasError arith1Result = errorOrValue arith1Result
     | hasError (transpileRelationalOperator op) = errorOrValue (transpileRelationalOperator op)
-    | otherwise = errorOrPrepend (transpileArithmeticExp arith2) (unwrap arith1Result++ unwrap (transpileRelationalOperator op))
+    | otherwise = errorOr (transpileArithmeticExp arith2) (" ( " ++ unwrap arith1Result++ unwrap (transpileRelationalOperator op)) " )"
     where arith1Result = transpileArithmeticExp arith1
 
 transpileRelationalString :: RelationalBinaryOperator -> StringExp  -> StringExp -> Either String String
 transpileRelationalString op string1 string2
     | hasError string1Result = errorOrValue string1Result
     | hasError (transpileRelationalOperator op) = errorOrValue (transpileRelationalOperator op)
-    | otherwise = errorOrPrepend (transpileStringExp string2) (unwrap string1Result ++ unwrap (transpileRelationalOperator op))
+    | otherwise = errorOr (transpileStringExp string2) (" ( " ++ unwrap string1Result ++ unwrap (transpileRelationalOperator op)) " )"
     where string1Result = transpileStringExp string1
 
 transpileRelationalOperator :: RelationalBinaryOperator -> Either String String
@@ -135,7 +133,7 @@ transpileRelationalOperator LessOrEqual = Right " <= "
 transpileRelationalOperator Greater = Right " > "
 transpileRelationalOperator GreaterOrEqual = Right " >= "
 
--- expression is irreducible is called reduceArithmetic before transpileArithmeticExp
+-- expression is irreducible and is called reduceArithmetic before transpileArithmeticExp
 transpileArithmeticExp :: ArithmeticExp -> Either String String 
 transpileArithmeticExp (Number number) = Right (show number)
 transpileArithmeticExp (NumericVar name) = Right name
@@ -188,7 +186,7 @@ transpileStringConcatenation string1 string2
 
 transpileValueExp:: ValueExp -> Either String String
 transpileValueExp (BoolValue boolExp) = errorOrValue (transpileBoolExp boolExp)
-transpileValueExp (NumberValue arithmeticExp) = errorOrValue (transpileArithmeticExp arithmeticExp ) -- TODO implement
+transpileValueExp (NumberValue arithmeticExp) = errorOrValue (transpileArithmeticExp arithmeticExp )
 transpileValueExp (StringValue stringExp) = errorOrValue (transpileStringExp stringExp)
 transpileValueExp (Apply func args) = errorOrValue (transpileFuncCallValue func args)
 transpileValueExp (Var name) = Right name
