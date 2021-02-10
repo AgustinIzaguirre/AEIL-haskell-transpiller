@@ -5,14 +5,11 @@ import Lib
 
 -- TODO also reduce relational expressions
 reduceBoolExp :: BoolExp -> BoolExp
-reduceBoolExp TrueValue = TrueValue
-reduceBoolExp FalseValue = FalseValue
-reduceBoolExp (BoolVar name) = BoolVar name
-reduceBoolExp (BoolFunc func args) = BoolFunc func args
 reduceBoolExp (BoolBinaryOperations op bool1 bool2) = reduceBoolOperation op bool1 bool2
 reduceBoolExp (Not bool) = reduceNot bool
 reduceBoolExp (RelationalBinaryArithmetic op arith1 arith2) = RelationalBinaryArithmetic op arith1 arith2
 reduceBoolExp (RelationalBinaryString op string1 string2) = RelationalBinaryString op string1 string2
+reduceBoolExp bool = bool
 
 reduceBoolOperation :: BoolBinaryOperators -> BoolExp -> BoolExp -> BoolExp
 reduceBoolOperation And bool1 bool2 = reduceAnd bool1 bool2
@@ -38,11 +35,9 @@ reduceNot bool
     | otherwise = Not (reduceBoolExp bool)
 
 reduceArithmeticExp :: ArithmeticExp -> ArithmeticExp
-reduceArithmeticExp (Number number) = Number number
-reduceArithmeticExp (NumericVar name) = NumericVar name
-reduceArithmeticExp (NumericFunc func args) = NumericFunc func args
 reduceArithmeticExp (Negate arith) = reduceNegation arith
 reduceArithmeticExp (ArithmeticBinaryOperation op arith1 arith2) = reduceArithmeticOperation op arith1 arith2
+reduceArithmeticExp arith = arith
 
 reduceNegation :: ArithmeticExp -> ArithmeticExp
 reduceNegation arith
