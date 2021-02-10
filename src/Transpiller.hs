@@ -56,7 +56,6 @@ transpileAssignStatement name value level = errorOr (transpileValueExp value) (i
 transpileReturnStatement :: ValueExp -> Int -> Either String String
 transpileReturnStatement value level = errorOr (transpileValueExp value) (identForLevel level ++ "return") "\n"
 
--- TODO add extra condition to optimize when if condition is constant
 transpileIfStatement :: BoolExp  -> Block -> Int -> Either String String
 transpileIfStatement condition block level 
     | hasError conditionResult = errorOrValue conditionResult
@@ -66,7 +65,6 @@ transpileIfStatement condition block level
                                     (identForLevel level ++ "if " ++ unwrap conditionResult ++ ":\n")
     where conditionResult = transpileBoolExp condition
 
--- TODO add extra condition to optimize when if condition is constant
 transpileIfElseStatement :: BoolExp  -> Block -> Block -> Int -> Either String String
 transpileIfElseStatement condition ifBlock elseBlock level 
     | hasError ifResult = errorOrValue ifResult
@@ -112,7 +110,6 @@ transpileBoolBinaryOperators :: BoolBinaryOperators  -> Either String String
 transpileBoolBinaryOperators And = Right " and "
 transpileBoolBinaryOperators Or = Right " or "
 
--- TODO implement
 transpileNotBoolExp :: BoolExp -> Either String String
 transpileNotBoolExp bool = errorOr (transpileBoolExp bool) "not ( " " )"
 
