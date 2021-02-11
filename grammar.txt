@@ -1,85 +1,84 @@
-Program = Function 
-          | Function Program
+<Program> = <Function> 
+          | <Function> <Program>
 
-Function = func FuncName () { Block }
-           | func FuncName (Parameters) { Block }
+<Function> = func <Name> () { <Block> }
+           | func <Name> (<Parameters>) { <Block> }
 
-Parameters = VarName
-             | VarName, Parameters
+<Parameters> = <Name>
+             | <Name>, <Parameters>
 
-Block = Empty
-        | Statement Block
-        | ConditionalBlock Block
-        | LoopBlock Block
+<Block> = ;
+        | <Statement> <Block>
+        | <Statement>
 
-ConditionalBlock = if ( BoolExp ) { Block }
-                   | if ( BoolExp ) { Block } else { Block }
+<Statement> = <Name> = <ValueExp>;
+            | return <ValueExp>;
+            | if (<BoolExp>) {<Block>}
+            | if (<BoolExp>) {<Block>} else {<Block>}
+            | while (<BoolExp>) {<Block>}
+            | print (<ValueExp>);
+            | <FuncCall>
 
-LoopBlock = while ( BoolExp ) { Block }
+<FuncCall> = <Name> ();
+           | <Name> (<Arguments>);
 
-Statement = VarName = BoolExp;
-            | VarName = ArithmeticExp;
-            | VarName = StringExp;
-            | VarName = FuncCall;
-            | return Argument;
-            | PrintFunc
+<Arguments> = <ValueExp>
+            | <ValueExp>, <Arguments>
 
-PrintFunc = print ( StringExp );
-            | print ( ArithmeticExp );
-            |  print ( BoolExp );
+<ValueExp> = <BoolExp>
+           | <ArithmeticExp>
+           | <StringExp>
+           | <FuncCall>
+           | <Name>
+           | read (<StringExp>)
+           | getNumber (<StringExp>)
 
-FuncCall = FuncName ();
-          | FuncName ( Arguments );
+<BoolExp> = true
+          | false
+          | <Name>
+          | <FuncCall>
+          | <BoolExp> && <BoolExp>
+          | <BoolExp> || <BoolExp>
+          | ! <BoolExp>
+          | <RelationalBinaryArithmetic>
+          | <RelationalBinaryString>
 
-Arguments = Argument
-            | Argument, Arguments
 
-Argument = VarName
-           | FuncCall
-           | BoolExp
-           | StringExp
-           | ArithmeticExp
+<RelationalBinaryArithmetic> = <ArithmeticExp> == <ArithmeticExp>
+                             | <ArithmeticExp> != <ArithmeticExp>
+                             | <ArithmeticExp> < <ArithmeticExp>
+                             | <ArithmeticExp> <= <ArithmeticExp>
+                             | <ArithmeticExp> > <ArithmeticExp>
+                             | <ArithmeticExp> >= <ArithmeticExp>
 
-BoolExp = True
-          | False
-          | VarName
-          | FuncCall
-          | BoolExp && BoolExp
-          | BoolExp || BoolExp
-          | ! BoolExp
-          | ArithmeticExp == ArithmeticExp
-          | ArithmeticExp != ArithmeticExp
-          | ArithmeticExp < ArithmeticExp
-          | ArithmeticExp <= ArithmeticExp
-          | ArithmeticExp > ArithmeticExp
-          | ArithmeticExp >= ArithmeticExp
-          | StringExp == StringExp
-          | StringExp != StringExp
-          | StringExp < StringExp
-          | StringExp <= StringExp
-          | StringExp > StringExp
-          | StringExp >= StringExp
+<RelationalBinaryString> = <StringExp> == <StringExp>
+                         | <StringExp> != <StringExp>
+                         | <StringExp> < <StringExp>
+                         | <StringExp> <= <StringExp>
+                         | <StringExp> > <StringExp>
+                         | <StringExp> >= <StringExp>
+                                
 
-ArithmeticExp = Number
-               | VarName
-               | FuncCall
-               | ArithmeticExp + ArithmeticExp
-               | ArithmeticExp - ArithmeticExp
-               | - ArithmeticExp
-               | ArithmeticExp * ArithmeticExp
-               | ArithmeticExp / ArithmeticExp
-               | ArithmeticExp % ArithmeticExp
+<ArithmeticExp> = <Number>
+                | <Name>
+                | <FuncCall>
+                | - <ArithmeticExp>
+                | <ArithmeticExp> + <ArithmeticExp>
+                | <ArithmeticExp> - <ArithmeticExp>
+                | <ArithmeticExp> * <ArithmeticExp>
+                | <ArithmeticExp> / <ArithmeticExp>
+                | <ArithmeticExp> % <ArithmeticExp>
+                | <ArithmeticExp> ** <ArithmeticExp>
 
-StringExp = String
-            | VarName
-            | FuncCall
-            | StringExp ++ StringExp
+<StringExp> = <String>
+            | <Name>
+            | <FuncCall>
+            | <StringExp> ++ <StringExp>
 
-String = "[0-9a-zA-Z]*"
+<String> = "<Character>*"
 
-Number = 0 | [1-9][0-9]*
+<Character> = any ASCII character
 
-VarName = [a-zA-Z0-9-]
+<Number> = 0 | [1-9][0-9]*
 
-FuncName = [a-zA-Z]
-            
+<Name> = [a-zA-Z0-9_-]+            
