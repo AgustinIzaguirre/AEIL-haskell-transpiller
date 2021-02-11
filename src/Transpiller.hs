@@ -54,7 +54,7 @@ transpileAssignStatement :: String -> ValueExp -> Int -> Either String String
 transpileAssignStatement name value level = errorOr (transpileValueExp value) (identForLevel level ++ name ++ " = ") "\n"
 
 transpileReturnStatement :: ValueExp -> Int -> Either String String
-transpileReturnStatement value level = errorOr (transpileValueExp value) (identForLevel level ++ "return") "\n"
+transpileReturnStatement value level = errorOr (transpileValueExp value) (identForLevel level ++ "return ") "\n"
 
 transpileIfStatement :: BoolExp  -> Block -> Int -> Either String String
 transpileIfStatement condition block level 
