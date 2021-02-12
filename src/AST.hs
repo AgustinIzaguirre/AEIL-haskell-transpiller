@@ -22,7 +22,6 @@ data Statement = Assign Name ValueExp
                 | PrintFunc ValueExp
                 | FuncCall Name [ValueExp]
                 deriving(Show)
-                -- FuncCall TODO
 
 data ValueExp = BoolValue BoolExp
                 | NumberValue ArithmeticExp

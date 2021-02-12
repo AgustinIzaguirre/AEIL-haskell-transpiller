@@ -34,9 +34,6 @@ braces = Token.braces lexer
 commaSeparated :: Parser a -> Parser [a]
 commaSeparated = Token.commaSep lexer
 
-semiColonSeparated :: Parser a -> Parser [a]
-semiColonSeparated = Token.semiSep lexer
-
 semiColon :: Text.Parsec.Prim.ParsecT String () Data.Functor.Identity.Identity String
 semiColon = Token.semi lexer
 
