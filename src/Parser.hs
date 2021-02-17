@@ -20,7 +20,7 @@ import AST
     (StringOperators(Concat), Program(Root, Multiple), Function(Func),  Name, StringExp(StringFunc, StringVar, StringBinaryOperation, StringConstant),
       RelationalBinaryOperator(GreaterOrEqual, Greater, LessOrEqual, Less, NotEquals, Equals),
       Statement(While, PrintFunc, IfElse, Assign, Return, FuncCall), Block(Empty, Actions, SingleAction),
-      ValueExp(StringValue, Read, Var, Apply, NumberValue, BoolValue),  Statement(If),
+      ValueExp(StringValue, Read, Var, Apply, NumberValue, BoolValue, GetNumber),  Statement(If),
         ArithmeticBinaryOperator(Power, Modulo, Minus, Add, Multiply, Divide),
       ArithmeticExp(NumericFunc, NumericVar, Number, ArithmeticBinaryOperation, Negate),
       BoolBinaryOperators(Or, And),
@@ -149,7 +149,7 @@ whileStatement = do
 printFuncStatement :: Parser Statement
 printFuncStatement = do
     reserved "print"
-    text <- parenthesis stringExpression
+    text <- parenthesis valueExpression
     semiColon
     return (PrintFunc text)
 
@@ -205,7 +205,8 @@ valueExpression = try (arithmeticExpression >>= \value -> return (NumberValue va
                 <|> try applyFunc
                 <|> try (stringExpression >>= \value -> return (StringValue value))
                 <|> try (identifier >>= \varName -> return (Var varName))
-                <|> readExpression
+                <|> try readExpression
+                <|> getNumberExpression
 
 applyFunc :: Parser ValueExp
 applyFunc = do
@@ -236,6 +237,12 @@ readExpression = do
         reserved "read"
         promptText <- parenthesis stringExpression
         return (Read promptText)
+
+getNumberExpression :: Parser ValueExp
+getNumberExpression = do
+        reserved "getNumber"
+        promptText <- parenthesis stringExpression
+        return (GetNumber promptText)
 
 realtionalExpression :: Parser BoolExp
 realtionalExpression = try arithmeticRelation

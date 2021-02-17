@@ -1,0 +1,17 @@
+# getGreater.aeil
+    
+func main() {
+    first = getNumber("Enter first number: ");
+    second = getNumber("Enter second number: ");
+    greater = getGreater(first, second);
+    print(greater);
+}
+
+func getGreater(first, second) {
+    if (first >= second) {
+        return first;
+    }
+    else {
+        return second;
+    }
+}

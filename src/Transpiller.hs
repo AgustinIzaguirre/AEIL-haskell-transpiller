@@ -47,16 +47,15 @@ transpileStatement (If condition block) level = errorOrValue (transpileIfStateme
 transpileStatement (IfElse condition ifBlock elseBlock) level = errorOrValue (transpileIfElseStatement (reduceBoolExp condition) 
                                                                                 ifBlock elseBlock level)
 transpileStatement (While condition block) level = errorOrValue (transpileWhileStatement (reduceBoolExp condition) block level)
-transpileStatement (PrintFunc text) level = errorOrValue (transpilePrintStatement (reduceStringExp text) level)
+transpileStatement (PrintFunc text) level = errorOrValue (transpilePrintStatement (reduceValueExp text) level)
 transpileStatement (FuncCall name args) level = errorOrValue (transpileFuncCallStatement name (fmap reduceValueExp args) level)
 
 transpileAssignStatement :: String -> ValueExp -> Int -> Either String String
 transpileAssignStatement name value level = errorOr (transpileValueExp value) (identForLevel level ++ name ++ " = ") "\n"
 
 transpileReturnStatement :: ValueExp -> Int -> Either String String
-transpileReturnStatement value level = errorOr (transpileValueExp value) (identForLevel level ++ "return") "\n"
+transpileReturnStatement value level = errorOr (transpileValueExp value) (identForLevel level ++ "return ") "\n"
 
--- TODO add extra condition to optimize when if condition is constant
 transpileIfStatement :: BoolExp  -> Block -> Int -> Either String String
 transpileIfStatement condition block level 
     | hasError conditionResult = errorOrValue conditionResult
@@ -66,7 +65,6 @@ transpileIfStatement condition block level
                                     (identForLevel level ++ "if " ++ unwrap conditionResult ++ ":\n")
     where conditionResult = transpileBoolExp condition
 
--- TODO add extra condition to optimize when if condition is constant
 transpileIfElseStatement :: BoolExp  -> Block -> Block -> Int -> Either String String
 transpileIfElseStatement condition ifBlock elseBlock level 
     | hasError ifResult = errorOrValue ifResult
@@ -83,8 +81,8 @@ transpileWhileStatement condition block level
                                     (identForLevel level ++ "while " ++ unwrap conditionResult ++ ":\n")
     where conditionResult = transpileBoolExp condition
 
-transpilePrintStatement :: StringExp -> Int -> Either String String
-transpilePrintStatement text level = errorOr (transpileStringExp text) (identForLevel level ++ "print(") ")\n"
+transpilePrintStatement :: ValueExp -> Int -> Either String String
+transpilePrintStatement text level = errorOr (transpileValueExp text) (identForLevel level ++ "print(") ", end=\"\")\n"
 
 transpileFuncCallStatement :: String -> [ValueExp] -> Int -> Either String String 
 transpileFuncCallStatement name args level = errorOr (transpileFuncCallValue name args) (identForLevel level) "\n"
@@ -112,7 +110,6 @@ transpileBoolBinaryOperators :: BoolBinaryOperators  -> Either String String
 transpileBoolBinaryOperators And = Right " and "
 transpileBoolBinaryOperators Or = Right " or "
 
--- TODO implement
 transpileNotBoolExp :: BoolExp -> Either String String
 transpileNotBoolExp bool = errorOr (transpileBoolExp bool) "not ( " " )"
 
@@ -195,7 +192,10 @@ transpileValueExp (StringValue stringExp) = errorOrValue (transpileStringExp str
 transpileValueExp (Apply func args) = errorOrValue (transpileFuncCallValue func args)
 transpileValueExp (Var name) = Right name
 transpileValueExp (Read text) = errorOrValue (transpileReadFunc text)
+transpileValueExp (GetNumber text) = errorOrValue (transpileGetNumberFunc text)
 
 transpileReadFunc :: StringExp -> Either String String
 transpileReadFunc stringExp = errorOr (transpileStringExp stringExp) "input(" ")"
 
+transpileGetNumberFunc :: StringExp -> Either String String
+transpileGetNumberFunc stringExp = errorOr (transpileStringExp stringExp) "int(input(" "))"

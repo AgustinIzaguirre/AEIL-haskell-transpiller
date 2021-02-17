@@ -19,10 +19,9 @@ data Statement = Assign Name ValueExp
                 | If BoolExp Block
                 | IfElse BoolExp Block Block
                 | While BoolExp Block
-                | PrintFunc StringExp
+                | PrintFunc ValueExp
                 | FuncCall Name [ValueExp]
                 deriving(Show)
-                -- FuncCall TODO
 
 data ValueExp = BoolValue BoolExp
                 | NumberValue ArithmeticExp
@@ -30,6 +29,7 @@ data ValueExp = BoolValue BoolExp
                 | Apply Name [ValueExp]
                 | Var Name
                 | Read StringExp
+                | GetNumber StringExp
                 deriving(Show)
 
 

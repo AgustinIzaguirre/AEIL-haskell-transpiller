@@ -1,0 +1,14 @@
+func main() {
+    number = 10;
+    guessed = getNumber("Guess a number from 1 to 10: ");
+    while (number != guessed) {
+        if (number < guessed) {
+            print("Your number is greater than ours.\n");
+        }
+        else {
+            print("Your number is lower than ours.\n");
+        }
+        guessed = getNumber("Guess number: ");
+    }
+    print("Congratulations you won!!\n");
+}
