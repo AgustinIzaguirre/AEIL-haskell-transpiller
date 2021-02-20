@@ -3,7 +3,9 @@ module Optimizer
         reduceValueExp,
         reduceBoolExp,
         reduceArithmeticExp,
-        reduceStringExp
+        reduceStringExp,
+        reduceRelationalArithmetic,
+        reduceRelationalString
     ) where
 
 import AST
