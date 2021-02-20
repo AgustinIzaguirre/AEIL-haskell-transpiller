@@ -6,3 +6,6 @@ compile:
 
 ghci:
 	source /Users/agustin/.ghcup/env && ghci
+
+runTests:
+	stack test --silent

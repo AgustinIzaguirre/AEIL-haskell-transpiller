@@ -4,6 +4,7 @@ import Test.HUnit
 
 import AST
 import Optimizer
+import Lib
 
 -- data for tests
 falseAnd :: BoolExp
@@ -57,6 +58,11 @@ reducibleModulo = ArithmeticBinaryOperation Modulo (Number 4) (ArithmeticBinaryO
 reduciblePower :: ArithmeticExp
 reduciblePower = ArithmeticBinaryOperation Power (Number 2) (ArithmeticBinaryOperation Power (ArithmeticBinaryOperation Power (Number 2) (Number 3)) (Number 1))
 
+reducibleArithMixed :: ArithmeticExp
+reducibleArithMixed = ArithmeticBinaryOperation Multiply (Number 2) (ArithmeticBinaryOperation Power (ArithmeticBinaryOperation Add (Number 2) (Number 3)) (Number 2))
+
+reducibleStringOperation :: StringExp
+reducibleStringOperation = StringBinaryOperation Concat (StringBinaryOperation Concat (StringConstant "Hello ") (StringConstant "World")) (StringConstant "!")
 
 -- tests
 reduceAnd1 :: Test
@@ -106,6 +112,26 @@ reduceModulo1 = TestCase (assertEqual "for reduceArithmeticExp simple modulo" (N
 reducePower1 :: Test
 reducePower1 = TestCase (assertEqual "for reduceArithmeticExp simple modulo" (Number 256) (reduceArithmeticExp reduciblePower))
 
+reduceArithMixed :: Test
+reduceArithMixed = TestCase (assertEqual "for reduceArithmeticExp mixed" (Number 50) (reduceArithmeticExp reducibleArithMixed))
+
+reduceLessArith :: Test
+reduceLessArith = TestCase (assertEqual "for reduceRelationalArithmetic less" TrueValue (reduceRelationalArithmetic Less (Number 100) (Number 1000)))
+
+reduceGreaterArith :: Test
+reduceGreaterArith = TestCase (assertEqual "for reduceRelationalArithmetic greater" FalseValue (reduceRelationalArithmetic Greater (Number 100) (Number 1000)))
+
+reduceRelationalMixedArith :: Test
+reduceRelationalMixedArith = TestCase (assertEqual "for reduceRelationalArithmetic mixed" FalseValue (reduceRelationalArithmetic Greater reducibleArithMixed reduciblePower))
+
+reduceStringOperation :: Test
+reduceStringOperation = TestCase (assertEqual "for reduceStringOperation concat" "Hello World!" (getStringVal (reduceStringExp reducibleStringOperation)))
+
+reduceLessString :: Test
+reduceLessString = TestCase (assertEqual "for reduceRelationalString less" FalseValue (reduceRelationalString Less (StringConstant "hola") (StringConstant "hello")))
+
+reduceGreaterString :: Test
+reduceGreaterString = TestCase (assertEqual "for reduceRelationalString greater" FalseValue (reduceRelationalString Less (StringConstant "hola") (StringConstant "hello")))
 
 getOptimizerTests :: Test
 getOptimizerTests = TestList [TestLabel "reduceBoolExp with false and" reduceAnd1,
@@ -122,4 +148,12 @@ getOptimizerTests = TestList [TestLabel "reduceBoolExp with false and" reduceAnd
                   TestLabel "reduceArithmeticlExp with simple multiply" reduceMultiply1,
                   TestLabel "reduceArithmeticlExp with simple division" reduceDivide1,
                   TestLabel "reduceArithmeticlExp with simple modulo" reduceModulo1,
-                  TestLabel "reduceArithmeticlExp with simple power" reducePower1]
+                  TestLabel "reduceArithmeticlExp with simple power" reducePower1,
+                  TestLabel "reduceArithmeticlExp mixed" reduceArithMixed,
+                  TestLabel "reduceRelationalArithmeticlExp less" reduceLessArith,
+                  TestLabel "reduceRelationalArithmeticlExp greater" reduceGreaterArith,
+                  TestLabel "reduceRelationalArithmeticlExp mixed" reduceRelationalMixedArith,
+                  TestLabel "reduceStringOperation concat" reduceStringOperation,
+                  TestLabel "reduceRelationalStringExp less" reduceLessString,
+                  TestLabel "reduceRelationalStringExp greater" reduceGreaterString]
+                
