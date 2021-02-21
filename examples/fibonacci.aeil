@@ -1,0 +1,22 @@
+func main() {
+    n = getNumber("Enter fibonacci number (between 0 and 20): ");
+    while (n < 0 || n > 20) {
+        print("Error. Number must be in the closed interval [0,20]\n\n");
+        n = getNumber("Enter fibonacci number (between 0 and 20): ");
+    }
+    print("Fibonacci of ");
+    print(n);
+    print(" is : ");
+    print(fibonacci(n));
+    print("\n");
+}
+
+func fibonacci(n) {
+    if (n == 0) {
+        return 0;
+    }
+    if (n == 1) {
+        return 1;
+    }
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
