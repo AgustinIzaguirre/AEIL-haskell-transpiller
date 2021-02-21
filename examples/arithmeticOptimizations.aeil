@@ -4,10 +4,14 @@ func main() {
     print ("a real value = ");
     print(a);
     print("\n");
-    testFunc (4 % 2, (-4) ** 2 + 4 / 2);
     print("testfunc call should be = testFunc(0, 18)\n");
+    testFunc (4 % 2, (-4) ** 2 + 4 / 2);
 }
 
 func testFunc(arg1, arg2) {
-    ;
+    print("Real testFunc = testFunc(");
+    print(arg1);
+    print(", ");
+    print(arg2);
+    print(")\n");
 }
