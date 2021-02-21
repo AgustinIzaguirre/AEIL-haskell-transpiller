@@ -182,7 +182,7 @@ transpileStringOperation Concat string1 string2 = errorOrValue (transpileStringC
 transpileStringConcatenation :: StringExp -> StringExp -> Either String String
 transpileStringConcatenation string1 string2
     | hasError string2Result = errorOrValue string2Result
-    | otherwise = errorOrAppend (transpileStringExp string1) (unwrap string2Result)
+    | otherwise = errorOrAppend(transpileStringExp string1) (" + " ++ unwrap string2Result) 
     where string2Result = transpileStringExp string2
 
 transpileValueExp:: ValueExp -> Either String String
