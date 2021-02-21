@@ -1,0 +1,42 @@
+func main() {
+    a = 10;
+   print("La suma es: ");
+   print(sum(a, 4));
+   print("\n");
+
+   print( "El mayor es: ");
+   print(greatest(a, 100));
+   print("\n");
+
+   print("Es par? " ++ isEven(8, True) ++ "\n");
+   print("Es par? ");
+   print(isEven(8, False));
+   print("\n");
+}
+
+func sum(a, b) {
+   return a + b;
+}
+
+func greatest(a, b) {
+    if (a > b) {
+      return a;
+   }
+   else {
+     return b; 
+  }
+}
+
+func isEven(number, returnString) {
+     if (returnString) {
+         if (number % 2 == 0) {
+             return "Si";
+         }
+         else {
+            return "No";
+         }
+     }
+     else {
+          return ((number % 2) == 0);
+    }
+}
