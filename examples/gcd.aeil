@@ -1,0 +1,45 @@
+func main() {
+    print("Welcome to Greatest Common Divisor calculator!!\n\n");
+    first = getNumber("Enter first number(> 0): ");
+    second = getNumber("Enter second number(> 0): ");
+    while (first <= 0 || second <= 0) {
+        if (first <= 0) {
+            print("First number must be greater than zero.\n");
+        }
+        if (second <= 0) {
+            print("Second number must be greater than zero\n");
+        }
+        print("\n");
+        first = getNumber("Enter first number(> 0): ");
+        second = getNumber("Enter second number(> 0): ");
+    }
+    print("GCD = ");
+    print(gcd(first, second));
+    print("\n");
+}
+
+func gcd(first, second) {
+    if (first == second || second == 0) {
+        return first;
+    }
+    if (first == 0) {
+        return second;
+    }
+    greatest = maxOf(first, second);
+    lowest = minOf(first,second);
+    return gcd(lowest, greatest % lowest);
+}
+
+func maxOf(first, second) {
+    if (first >= second) {
+        return first;
+    }
+    return second;
+}
+
+func minOf(first, second) {
+    if (first < second) {
+        return first;
+    }
+    return second;
+}
