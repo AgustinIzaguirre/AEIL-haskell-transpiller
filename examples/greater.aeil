@@ -5,6 +5,7 @@ func main() {
     second = getNumber("Enter second number: ");
     greater = getGreater(first, second);
     print(greater);
+    print("\n");
 }
 
 func getGreater(first, second) {
