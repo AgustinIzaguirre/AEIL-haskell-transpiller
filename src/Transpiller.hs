@@ -157,7 +157,7 @@ transpileArithmeticOperators :: ArithmeticBinaryOperator  -> Either String Strin
 transpileArithmeticOperators Add = Right " + "
 transpileArithmeticOperators Minus = Right " - "
 transpileArithmeticOperators Multiply = Right " * "
-transpileArithmeticOperators Divide = Right " / "
+transpileArithmeticOperators Divide = Right " // "
 transpileArithmeticOperators Modulo = Right " % "
 transpileArithmeticOperators Power = Right " ** "
 
